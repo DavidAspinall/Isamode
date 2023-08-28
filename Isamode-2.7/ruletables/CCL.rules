@@ -1,0 +1,13 @@
+Ev-Sems
+ trueV  falseV  pairV  lamV  
+ caseVtrue  caseVfalse  caseVpair  caseVlam  
+ canonical  substitute 
+Rules
+ po_refl  po_trans  po_cong  po_abstractn  
+ eq_iff  PO_iff  EQ_iff  
+ caseBtrue  caseBfalse  caseBpair  caseBlam  caseBbot  
+ distinctness 
+Defs
+ apply_def  bot_def  fix_def  
+ SIM_def  POgen_def  EQgen_def  PO_def  EQ_def  
+ Dvg_def  Trm_def 

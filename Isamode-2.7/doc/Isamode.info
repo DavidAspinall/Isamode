@@ -1,0 +1,70 @@
+This is Isamode.info, produced by makeinfo version 4.0 from
+Isamode.texi.
+
+
+Indirect:
+Isamode.info-1: 75
+Isamode.info-2: 49617
+
+Tag Table:
+(Indirect)
+Node: Top75
+Node: Introduction932
+Node: Features of Isamode2054
+Node: Prerequisites2953
+Node: Interacting with Isabelle3607
+Node: Logic choice5231
+Node: Startup sequence6453
+Node: Completion7486
+Node: Backslashes in interaction8329
+Node: Menus9800
+Node: Interaction menu operations11369
+Node: Proofstate14660
+Node: Proofstate commands16052
+Node: Large Proof states17306
+Node: Rule tables18815
+Node: Ruletable commands20966
+Node: Creating rule tables22558
+Node: Rule Categories24318
+Node: Naming convention table25866
+Node: Naming convention example26836
+Node: Rule table internals27548
+Node: Rule table format28100
+Node: Rule table extension functions29164
+Node: Listener29598
+Node: Listener commands30813
+Node: Theory and ML files32519
+Node: Theory files33346
+Node: ML files37123
+Node: Batchifying proofs39170
+Node: Theory mode User Options42444
+Node: Fontification of Theory Files43602
+Node: Display Customization44327
+Node: Display options I44693
+Node: Display options II46381
+Node: X Resources49617
+Node: Acknowledgements51924
+Node: Obtaining the software52780
+Node: Installing Isamode54127
+Node: Ideas and Dreams56178
+Node: Proof stepping57250
+Node: Customization per-logic57837
+Node: Better theory handling58624
+Node: Improved Listener59203
+Node: Caching proof states60454
+Node: Rule table categories60910
+Node: Improved batchify62212
+Node: Tracing Output62666
+Node: Text insertion62943
+Node: Improved templates63535
+Node: Sensitizing rules63864
+Node: Buttons64131
+Node: Driving by mouse64591
+Node: Help from Isabelle65024
+Node: Bells and whistles65776
+Node: Special characters66130
+Node: Questions66683
+Node: Index67012
+Node: Copying75572
+
+End Tag Table

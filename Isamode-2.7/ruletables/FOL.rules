@@ -1,0 +1,20 @@
+Equality
+ refl  sym  trans  subst  ssubst 
+Propositions
+ conjI  conjunct1  conjunct2  conjE  
+ disjI1  disjI2  disjE  
+ impI  mp  impE  
+ TrueI  FalseE  
+ notI  notE  
+ iffI  iffE  iffD1  iffD2 
+Quantifiers
+ allI  spec  allE  all_dupE  
+ exI  exE  
+ ex1I  ex1E 
+Classical
+ classical  excluded_middle  notnotD  swap  
+ disjCI  exCI  ex_classical  impCE  iffCE 
+Definitions
+ True_def  not_def  iff_def  ex1_def 
+Rule-sets
+ FOL_ss (!simpset) prop_cs  FOL_cs 

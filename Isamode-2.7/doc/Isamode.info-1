@@ -1,0 +1,1372 @@
+This is Isamode.info, produced by makeinfo version 4.0 from
+Isamode.texi.
+
+
+File: Isamode.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
+
+Isamode
+*******
+
+This file documents version 2.7 of `Isamode', a user-interface and
+suite of editing functions for using the theorem prover Isabelle inside
+GNU Emacs.  The facilities are implemented mostly in Emacs Lisp.
+
+To load from any Emacs session, you need to insert the line:
+
+        (require 'isa-site)
+
+into your `~/.emacs' file.
+
+You may need to use `(load "PATH/isa-site")' instead if `isa-site' is
+not on the Emacs load-path at your site.
+
+Then use the command `M-x isabelle' to start Isabelle...
+
+* Menu:
+
+* Introduction::
+* Interacting with Isabelle::
+* Proofstate::
+* Rule tables::
+* Listener::
+* Theory and ML files::
+* Display Customization::
+* Acknowledgements::
+* Obtaining the software::
+* Installing Isamode::
+* Ideas and Dreams::
+* Index::
+* Copying::
+
+
+File: Isamode.info,  Node: Introduction,  Next: Interacting with Isabelle,  Prev: Top,  Up: Top
+
+Using Isabelle with Emacs
+*************************
+
+There are several good reasons for using Emacs when you're proving
+theorems with Isabelle.  For example, you can retain a complete history
+of your interaction inside an Emacs buffer, which you can browse or
+search through.  You can use the editing and history mechanism to speed
+up typing commands to Isabelle.  You can conveniently cut and paste in
+the shell buffer, to edit your completed proofs into an ML batch file,
+or issue commands kept in a file.
+
+These things are possible just by running Isabelle inside an Emacs shell
+buffer. "Isamode" is an Emacs Lisp package which builds on this to
+provide additional Isabelle-specific editing and interaction facilities.
+It goes a small way to softening the harshness of Isabelle's text-only
+user interface; the hope is that it will help make the learning curve
+for new Isabelle users less steep, whilst at the same time speeding up
+use for experienced Isabelle users.
+
+* Menu:
+
+* Features of Isamode::
+* Prerequisites::
+
+
+File: Isamode.info,  Node: Features of Isamode,  Next: Prerequisites,  Prev: Introduction,  Up: Introduction
+
+Features of Isamode
+===================
+
+   * An *Isabelle interaction mode* allows you to interact with
+     Isabelle in a shell-like buffer.
+
+   * *Menus and keyboard accelerators* issue common tactics and proof
+     commands.
+
+   * The *current proof state* is displayed in a separate buffer.
+
+   * *Rule tables* show the rules available in the current logic, for
+     building tactics.
+
+   * The *listener* records interactive proofs, for "batchifying" later.
+
+   * A *theory file mode* provides features for editing `.thy' theory
+     files.
+
+The proof state, rule tables and listener are called "associated
+buffers", because each is associated with a particular Isabelle
+interaction buffer.  Each of the associated buffers can each appear in a
+separate Emacs frame on the screen.
+
+
+File: Isamode.info,  Node: Prerequisites,  Prev: Features of Isamode,  Up: Introduction
+
+Prerequisites
+=============
+
+This manual assumes a basic understanding of Isabelle; you should at
+least have read the _Introduction to Isabelle_ manual.
+
+To get the most from Isamode, you should understand a little about how
+Emacs lisp packages work, in particular, how to set user options.  Emacs
+is self-documenting, so you can begin from `C-h' and find out
+everything!  Here are some useful commands:
+
+`C-h m'
+     `describe-mode'
+
+`C-h b'
+     `describe-bindings'
+
+`C-h f'
+     `describe-function'
+
+`C-h v'
+     `describe-variable'
+
+
+     `M-x edit-options'
+
+
+File: Isamode.info,  Node: Interacting with Isabelle,  Next: Proofstate,  Prev: Introduction,  Up: Top
+
+Interacting with Isabelle
+*************************
+
+Using Isabelle with Isamode, you interact in a shell-like buffer based
+on the Emacs command-interpreter package, `comint'.  The same package
+lies behind the shell mode in Emacs.  The `comint' package has many
+useful features.  For example, there is a command history ring,
+accessed with the keys `M-p' (`comint-previous-input') and `M-n'
+(`comint-next-input').  Another feature is context-sensitive
+completion, used in Isamode for filenames and ML identifiers.
+
+You can find out more about `comint' by reading the documentation in
+the file `comint.el' or, as usual, using `C-h m' (`describe-mode') to
+show the keys and commands available.  Many of the commands are also
+available on pull-down menus.
+
+The main command to start Isabelle is `M-x isabelle'.
+
+ - Command: isabelle
+     Prompt for a logic name, and then create or switch to an Isabelle
+     process for the chosen LOGIC.  The isabelle session takes place in
+     an "interaction buffer", named `*LOGIC*'.
+
+See below for more details about how to select a logic.
+
+`M-x isabelle' behaves as other similar Emacs commands: if there is
+already a buffer `*LOGIC*', then `isabelle LOGIC' will switch to that
+buffer (and its associated buffers).  But it is perfectly possible to
+have more than one Isabelle session with the same logic -- you simply
+rename the first buffer.
+
+* Menu:
+
+* Logic choice::
+* Startup sequence::
+* Completion::
+* Backslashes in interaction::
+* Menus::
+* Interaction menu operations::
+
+
+File: Isamode.info,  Node: Logic choice,  Next: Startup sequence,  Prev: Interacting with Isabelle,  Up: Interacting with Isabelle
+
+Choosing which Logic
+====================
+
+If you type `M-x isabelle' you are prompted for a logic name; you may
+hit `<SPC>' for a list of possibilities.  Alternatively, selecting
+`Session' from the Isabelle menu will also display a sub-menu of logic
+names.  The list shown will contain all the object logics found when
+Isamode was started.  Object logics are searched for using the Isabelle
+tool `isatool findlogics'.
+
+If you want to use a newly built logic which isn't in the completion
+list, typing `C-u M-x isabelle' will run the command `isatool
+findlogics' again to update the internal record of object logics
+available.  (Note: this doesn't rebuild the menu at present).
+
+The command `M-x isabelle' calls the internal function
+`isabelle-session', which may be useful if you wish to write special
+start-up scripts for Emacs to fire-up Isabelle, or define keys to
+switch to a particular logic session.
+
+ - Internal Function: isabelle-session logic
+     Create or switch to an Isabelle process in an interaction buffer
+     with the base logic LOGIC.  The buffer is named `*LOGIC*'.
+
+
+File: Isamode.info,  Node: Startup sequence,  Next: Completion,  Prev: Logic choice,  Up: Interacting with Isabelle
+
+Startup Sequence
+================
+
+ - User Option: isa-session-prelude
+     This variable contains a command silently sent to the process at
+     the start of every Isabelle session.  It's useful for setting
+     options inside Isabelle (for example, `loadpath'), or loading a
+     personal startup file that does such configuration.
+
+The default value of ISA-SESSION-PRELUDE is set from the Isabelle
+settings environment, to be the value of the environment variable
+ISAMODE_PRELUDE.
+
+An example setting for this is:
+        ISAMODE_PRELUDE='use "/home/da/isabelle/startup.ML";'
+which attempts to read in a file `startup.ML' from my Isabelle
+directory.  You might set this variable in the private
+`$ISABELLE_HOME_USER/etc/settings' file.
+
+*NOTE*: make sure that the string is properly escaped from the shell;
+terminated with a semi-colon and doesn't lead to an error -- you won't
+see the results of executing it!
+
+
+File: Isamode.info,  Node: Completion,  Next: Backslashes in interaction,  Prev: Startup sequence,  Up: Interacting with Isabelle
+
+Completion
+==========
+
+ - Command: comint-dynamic-complete
+     The primary completion command in  the Isabelle interaction
+     buffer, usually bound to <TAB>.  If the point is  inside an ML
+     string, completion will assume you are asking for a  filename,
+     otherwise that you are completing some ML identifier.
+
+ - Constant: isa-completion-list
+     This constant contains the table  used for ML identifier
+     completion.  Completion is provided for  identifiers denoting
+     tactics, tacticals and proof commands.  See the  file
+     `isa-rules.el'.
+
+Completion is not implemented for rule names because typically they are
+short, and may be displayed in a rule table anyway (*note Rule
+tables::).
+
+
+File: Isamode.info,  Node: Backslashes in interaction,  Next: Menus,  Prev: Completion,  Up: Interacting with Isabelle
+
+Backslashes
+===========
+
+Isabelle uses ML strings to represent types and terms of the meta-logic.
+Terms and types can be very long strings which are easier to read, type
+and edit if they span several lines. ML strings which span lines must
+contain the escape sequence `\ \' to indicate to the ML parser that the
+carriage return is not part of the string and that the string will be
+continued on the next line.
+
+When you are inputting such strings it is annoying to need to remember
+to include these backslashes.  So Isamode makes the job easy for you by
+doing it automatically, both in interaction buffers, and inside `.thy'
+files (*note Theory files::).
+
+If you type <RET> at the end of a line which contains an unclosed
+string, Isamode will insert a backslash (if you haven't done already)
+before sending it to the ML process.  Another backslash will be inserted
+on the following line.
+
+If you don't like this behaviour, here is a way to disable it:
+
+             (add-hook 'isa-mode-hook
+                (function (lambda ()
+                           (define-key isa-mode-map "\C-m"
+                                       'comint-send-input))))
+
+<RET> is normally bound to the function `isa-send-input'.
+
+ - Internal function: isa-send-input
+     A function which does automatic backslashing before and after
+     invoking `comint-send-input'.
+
+
+File: Isamode.info,  Node: Menus,  Next: Interaction menu operations,  Prev: Backslashes in interaction,  Up: Interacting with Isabelle
+
+Menus
+=====
+
+Isamode provides a main menu, called `Isabelle', which appears by
+default in Isabelle interaction buffers and theory file buffers.  After
+loading Isamode, it will also appear in ML buffers, if you use
+`sml-mode' (*note ML files::).  To add the main menu to the menubar of
+the current buffer in other cases, there is a command, `M-x isa-menus'.
+
+ - Command: isa-menus
+     Add main `Isabelle' menu to current menubar.
+
+The main menu has options for starting Isabelle sessions, displaying
+documentation, or engaging various editing functions (see *Note Theory
+and ML files::).  In addition to the `Isabelle' menu, there are four
+menus provided for interaction mode.
+
+`Option'
+     allows you to activate or switch to buffers associated with  this
+     one, or adjust various Isabelle parameters.  There is a quit
+     option here.
+
+`Goal'
+`Prover'
+`Tactic'
+     are menus providing short-cuts for typing frequently used Isabelle
+     commands.  Each item in these menus inserts text into the Isabelle
+     buffer.  Most have key bindings too, so you can save many
+     keystrokes.
+
+The convention for the Isabelle command key sequences is:
+
+`C-c C-t KEY'
+     for tactics...
+
+`C-c C-r KEY'
+     for rewriting tactics...
+
+`C-c C-p KEY'
+     for prover tactics...
+
+`C-c C-s KEY'
+     for goal commands... (remember goal `s'tack or   `s'tart proof)
+
+The commands are shown in full in *Note Interaction menu operations::.
+
+
+File: Isamode.info,  Node: Interaction menu operations,  Prev: Menus,  Up: Interacting with Isabelle
+
+Interaction mode menu operations
+================================
+
+Here's a list of the Isamode interaction buffer commands in the `Goal',
+`Prover' and `Tactic' menus.  We show the text they insert, and the
+keystrokes bound to the commands by default.  In the table, D stands
+for the designated subgoal (*note Proofstate commands:: -- don't forget
+`C-<up>' and `C-<down>').  RULES, THMNAME, etc, stand for some data
+that must be typed to complete the command.  If there is no data
+needed, the text may be sent immediately to Isabelle; otherwise you
+should type something followed by <RET>.
+
+Primary Tactics
+...............
+
+`isa-resolve_tac'
+     `by (resolve_tac [RULES] D);'
+     key: `C-c C-t C-r'
+
+`isa-resolve_tac-prems'
+     `by (resolve_tac prems D);'
+     key: `C-c C-t C-p'
+
+`isa-assume_tac'
+     `by (assume_tac D);'
+     key: `C-c C-t C-a'
+
+`isa-eresolve_tac'
+     `by (eresolve_tac [RULES] D);'
+     key: `C-c C-t C-e'
+
+`isa-dresolve_tac'
+     `by (dresolve_tac [RULES] D);'
+     key: `C-c C-t C-d'
+
+`isa-forward_tac'
+     `by (forward_tac [RULES] D);'
+     key: `C-c C-t C-f'
+
+`isa-match_tac'
+     `by (match_tac [RULES] D);'
+     key: `C-c C-t r'
+
+`isa-match_tac-prems'
+     `by (match_tac prems D);'
+     key: `C-c C-t p'
+
+`isa-eq_assume_tac'
+     `by (eq_assume_tac [RULES] D);'
+     key: `C-c C-t a'
+
+`isa-ematch_tac'
+     `by (ematch_tac [RULES] D);'
+     key: `C-c C-t e'
+
+`isa-dmatch_tac'
+     `by (dmatch_tac [RULES] D);'
+     key: `C-c C-t d'
+
+Rewriting Tactics
+.................
+
+`isa-rewrite_goals_tac'
+     `by (rewrite_goals_tac [RULES]);'
+     key: `C-c C-r g'
+
+`isa-rewrite_tac'
+     `by (rewrite_tac [RULES]);'
+     key: `C-c C-r w'
+
+`isa-fold_goals_tac'
+     `by (fold_goals_tac [RULES]);'
+     key: `C-c C-r f'
+
+`isa-cut_facts_tac'
+     `by (cut_facts_tac [RULES] D);'
+     key: `C-c C-r c'
+
+`isa-cut_facts_tac-prems'
+     `by (cut_facts_tac prems D);'
+     key: `C-c C-r p'
+
+Prover Tactics
+..............
+
+`isa-simp_tac'
+     `by (simp_tac SIMPSET_ss D);'
+     key: `C-c C-p C-s'
+
+`isa-asm_simp_tac'
+     `by (asm_simp_tac SIMPSET_ss D);'
+     key: `C-c C-p C-a'
+
+`isa-asm_full_simp_tac'
+     `by (asm_full_simp_tac SIMPSET_ss D);'
+     key: `C-c C-p C-f'
+
+`isa-fast_tac'
+     `by (fast_tac CLASET_cs D);'
+     key: `C-c C-p f'
+
+`isa-best_tac'
+     `by (best_tac CLASET_cs D);'
+     key: `C-c C-p b'
+
+`isa-step_tac'
+     `by (step_tac CLASET_cs D);'
+     key: `C-c C-p s'
+
+`isa-contr_tac'
+     `by (contr_tac D);'
+
+`isa-mp_tac'
+     `by (mp_tac D);'
+
+`isa-eq_mp_tac'
+     `by (eq_mp_tac D);'
+
+Goal Commands
+-------------
+
+`isa-undo'
+     `undo();'
+     key: `C-c C-s u'
+
+`isa-back'
+     `back();'
+     key: `C-c C-s b'
+
+`isa-chop'
+     `chop();'
+     key: `C-c C-s c'
+
+`isa-choplev'
+     `choplev LEV;'
+     (unbound)
+
+`isa-goal-thy'
+     `val prems = goal thy "GOAL";'
+     key: `C-c C-s g'
+
+`isa-goalw-thy'
+     `val prems = goalw thy REWRITES "GOAL";'
+     key: `C-c C-s w'
+
+`isa-result'
+     `val THMNAME = result();'
+     key: `C-c C-s r'
+
+`isa-push-proof'
+     `push_proof();'
+     key: `C-c C-s p'
+
+`isa-pop-proof'
+     `val prems = pop_proof();'
+     key: `C-c C-s o'
+
+`isa-rotate-proofs'
+     `val prems = rotate_proof();'
+     key: `C-c C-s n'
+
+
+File: Isamode.info,  Node: Proofstate,  Next: Rule tables,  Prev: Interacting with Isabelle,  Up: Top
+
+Proof state
+***********
+
+The _proof state buffer_ maintains a display of the current proof state
+(goal and subgoal list) during interactive proof.  Usually this would
+appear interspersed with user input on the terminal -- one of the major
+benefits of using Isamode is that it separates this output and keeps
+the machine dialogue uncluttered.
+
+Internally, this is implemented by setting up a process-filter which
+watches output from the Isabelle process, waiting for character
+sequences that look like displays of the proof state, as for example,
+when you type `pr();'.  If a proof state buffer is active, these
+sequences will be stripped from the output and used to update the
+buffers contents.
+
+ - Command: proofstate
+     Start or display a proof state buffer  associated with the current
+     Isabelle interaction buffer.  At most one  proof state buffer can
+     be associated with a given Isabelle interaction buffer.   This
+     command gives an error if the current buffer is not an Isabelle
+     buffer.
+
+`M-x proofstate' is usually bound to `C-c M-p', which is useful in
+single frame mode (*note Display options I::) because it provides a
+quick way of switching buffers in another window to show the proofstate
+display.
+
+* Menu:
+
+* Proofstate commands::
+* Large Proof states::
+
+
+File: Isamode.info,  Node: Proofstate commands,  Next: Large Proof states,  Prev: Proofstate,  Up: Proofstate
+
+Proofstate Commands
+===================
+
+In the proof state buffer, the cursor usually appears opposite one of
+the subgoals in the list (if there are any).  This subgoal is called the
+"designated subgoal"; it can be selected using the cursor keys <up> and
+<down>, or from the interaction buffer, with `C-<up>' and `C-<down>'.
+
+The designated subgoal is the one you wish to prove; it is the subgoal
+that will be used by default by the tactic insertion commands in the
+interaction buffer (*Note Interaction menu operations::) or in a rule
+table (*note Ruletable commands::)
+
+Other useful keys in the proofstate buffer are <LEFT>
+(`proofstate-previous-level') and <RIGHT> (`proofstate-next-level'),
+which page back and forward through levels of the proof.  To go
+directly to a specific level, type the level as a prefix argument
+(e.g., `M-2 M-7' for level 27), and hit <SPC> (`proofstate-refresh').
+Without an argument, `proofstate-refresh' returns to the latest level.
+
+If you resize the proofstate window, it is useful to set Isabelle's
+pretty printer margin appropriately.  This is done by pressing <RET>
+(`proofstate-resize-and-refresh').
+
+
+File: Isamode.info,  Node: Large Proof states,  Prev: Proofstate commands,  Up: Proofstate
+
+A note about large proof states
+===============================
+
+You may discover that very large proof states sometimes fail to parse
+and end up in the Isabelle buffer, instead of the proof state buffer.
+
+The reason for this is that the Emacs code filters all the output from
+the Isabelle process so that proof states can be stripped out.  This is
+done by matching on text between ML prompts; text up to the next prompt
+is put into a hidden output buffer before matching.  Unfortunately, this
+has a bad interaction with `use' and `use_thy', because `use' may
+produce a lot of output (perhaps slowly) before the next prompt
+appears, and it is very strange not to see any output before `use' has
+finished.
+
+So if the output gets larger than a certain threshold, Isamode assumes
+that it is from `use' (or something similar), and won't contain a proof
+state.  The variable that controls this threshold is
+`isa-text-spill-size', which defaults to `2000'.  If you notice large
+proof states spilling into the Isabelle buffer, one solution is to
+reduce the goals limit; another is to set this variable higher by, for
+example:
+
+         (setq isa-text-spill-size 5000)
+
+in your `.emacs'.  But remember that there will be a bigger delay with
+`use'.
+
+The present output filtering technique is unsatisfactory and may be
+changed in the future when improved mechanisms of communication between
+Isabelle and Emacs are possible.
+
+
+File: Isamode.info,  Node: Rule tables,  Next: Listener,  Prev: Proofstate,  Up: Top
+
+Rule tables
+***********
+
+A _rule table buffer_ displays a formatted table of ML identifiers,
+typically including rule names, simplifier sets, classical rule sets and
+tactics.  You can use the table for reference purposes, or actively:
+there are commands to copy the names into the interaction buffer, to
+build tactics based on the names, or to display the rule.
+
+Isamode comes supplied with basic rule tables for the standard object
+logics.  You can easily extend these to add your favourite rules and
+tactics, or create new rule tables for your own theories, by writing
+`.rules' files.
+
+The command to show a rule table is `M-x ruletable', normally bound to
+the key `C-c M-l' (which is useful in single frame mode).
+
+ - Command: ruletable
+     Prompt for a ruletable to display.  This command gives an error if
+     the current buffer is not an Isabelle buffer.
+
+Rule table files are searched for in directories in the list
+`isa-ruletable-paths'.
+
+ - User Option: isa-ruletable-paths
+     This variable is a list of directory names which are used to store
+     rule table `.rules' files.
+
+     The default value is found using the `isatool' program; either it
+     is set from ISAMODE_RULETABLE_PATH, if that variable set, or it is
+     set to be the single directory ISAMODE_HOME/RULETABLES.  You
+     should set ISAMODE_RULETABLE_PATH to be a colon-separated sequence
+     of paths, as usual for Unix path variables.
+
+Just as for object logics, Isamode keeps an internal record of the rule
+tables available and their file names.  If you type `C-u M-x
+ruletable', this internal record will be re-built.
+
+There may be any number of rule table buffers associated with a single
+Isabelle interaction buffer. When running under a window system, the
+first 3 (by default) will receive their own windows.  The modeline at
+the bottom of rule table buffer displays both the name of the logic it
+is associated with, and the name of the theory for which it is a table.
+
+* Menu:
+
+* Ruletable commands::
+* Creating rule tables::
+* Rule Categories::
+* Rule table internals::
+
+
+File: Isamode.info,  Node: Ruletable commands,  Next: Creating rule tables,  Prev: Rule tables,  Up: Rule tables
+
+Ruletable Commands
+==================
+
+The cursor keys are used to move amongst the rule names, or you can use
+the mouse to highlight a rule name.  Hitting `SPC' or pressing the left
+mouse button, `button-1', will insert the rule name into the
+interaction buffer, possibly preceded by a comma.  This allows you to
+quickly construct lists of rules.
+
+The middle mouse button, `button-2', can be used to execute a tactic:
+
+`S-button-2'
+     executes `by (rtac RULE D);'
+
+`C-button-2'
+     executes `by (dtac RULE D);'
+
+`M-button-2'
+     executes `by (etac RULE D);'
+
+`button-2'
+     executes a tactic based on the name of the rule.
+     How the tactic is chosen is described in *Note Rule Categories::.
+where D is the designated subgoal (*note Proofstate commands::).
+
+Pressing <RET> or the right mouse button, `button-3', displays the rule
+in a temporary buffer using `prth' -- hit <q> immediately afterward to
+remove it.  If the name denotes something other than a rule, it may be
+displayed correctly if what it denotes can be guessed from its name,
+*Note Rule Categories::.  Otherwise, you may just see a type error!
+
+The key `TAB' toggles the display mode of the table. The display can be
+in _short form_, where descriptive headings for rule tables are not
+displayed and lines are concatenated (this is useful for single frame
+mode), or _long form_, where all headings and grouping is shown.  `TAB'
+also reformats the table, so it is useful if you re-size the Emacs
+window.
+
+
+File: Isamode.info,  Node: Creating rule tables,  Next: Rule Categories,  Prev: Ruletable commands,  Up: Rule tables
+
+Creating Rule tables
+====================
+
+When you write your own theories and logics, you may want to extend or
+create rule tables.  This is very easy to do.  Choose a name for your
+rule table (typically, the name of the theory or logic it documents),
+and create a text file `NAME.rules'.
+
+The text file should consist of _headings_ and _identifiers_.  Here's a
+fragment of `FOL.rules':
+
+     Equality
+      refl  sym  trans  subst  ssubst
+     Propositions
+      conjI  conjunct1  conjunct2  conjE
+      disjI1  disjI2  disjE
+      impI  mp  impE
+     Quantifiers
+      allI  spec  allE  all_dupE
+
+Headings begin at the start of a line and should not contain whitespace;
+nothing should follow a heading.  Identifiers should be valid ML
+identifiers, and be separated by tabs or spaces.  A line of identifiers
+begins with some whitespace.
+
+When the rule table file is loaded by Isamode, it is parsed and stored
+internally; the headings and position of line breaks are recorded.  This
+allows rule tables to be shown in both long and short form: the short
+form just breaks the line at headings, and concatenates lines of
+identifiers between headings.  More details of the internal format of
+rule tables are in *Note Rule table internals::.
+
+At present there is no mechanism for automatic generation of rule
+tables.  In the future there should be ways of building tables using the
+theorem database, although it will still be useful to design and edit
+tables by hand, because of the ability to add headings and comment text
+in the tables; presently Isabelle's theorem database is too primitive to
+provide useful meta-comments about theorems.
+
+
+File: Isamode.info,  Node: Rule Categories,  Next: Rule table internals,  Prev: Creating rule tables,  Up: Rule tables
+
+Rule Categories
+===============
+
+Rule tables are not limited to containing rule names, they may display
+any ML identifier.  Rules (ML type `thm'), tactics (ML type `tactic' or
+`int->tactic'), rule sets (`simpset',`claset') are all candidates.  The
+more logic-dependent names that are shown in a rule table, the less a
+user has to remember or refer to documentation for.
+
+We can also take the opportunity to make use of all these
+logic-dependent things.  One use is by building appropriate tactics
+automatically inside Emacs to apply during proof: typically with
+something of type `claset' one might use `fast_tac', or `simp_tac' with
+a `simpset', etc.  For rules, we'd like to distinguish between
+introduction rules (to use `resolve_tac') and elimination rules (to use
+`eresolve_tac'), for example.
+
+Isamode does some `automatic tactic building' from the rule table, but
+it isn't very flexible as yet.  Clicking with the middle mouse key on a
+name in a rule table executes a command which guesses which tactic to
+apply based on the name.  In XEmacs, this default tactic is displayed
+when you move the pointer over the rule.
+
+Emacs decides what kind of entity something in a rule table is, and then
+which tactic to apply, by pattern matching on its name.  This works most
+of the time, as many identifiers used in Isabelle follow a regular
+naming convention.
+
+* Menu:
+
+* Naming convention table::
+* Naming convention example::
+
+
+File: Isamode.info,  Node: Naming convention table,  Next: Naming convention example,  Prev: Rule Categories,  Up: Rule Categories
+
+Naming convention table
+-----------------------
+
+Here are the categories of identifier that you might want to include in
+ruletables, together with the patterns used to distinguish them and the
+default tactics they trigger.
+
+N stands for a digit `0'-`9', D for a subgoal number, and RL for some
+characters in a rule name.
+
+`RLI or RLIN'
+     "Introduction rule"
+     `rtac RL D'
+
+`RLE or RLEN'
+     "Elimination rule"
+     `etac RL D'
+
+`RLD or RLDN'
+     "Destruction rule"
+     `dtac RL D'
+
+`'
+     "Arbitrary rule"
+     `rtac RL D'
+
+`RL_def'
+     "Definition"
+     `rewrite_goals_tac [RL]'
+
+`RL_rls'
+     "Rule set"
+     `resolve_tac RL D'
+
+`RL_ss'
+     "Simplifier rule set"
+     `asm_full_simp_tac RL D'
+
+`RL_cs'
+     "Classical rule set"
+     `fast_tac RL D'
+
+`RL_tac'
+     "Indexed Tactic"
+     `RL D'
+
+`'
+     "Tactic"
+     `RL'
+
+
+File: Isamode.info,  Node: Naming convention example,  Prev: Naming convention table,  Up: Rule Categories
+
+Naming convention example
+-------------------------
+
+For example, `iffD2' will be recognised as a destruction rule, whereas
+`iffI' will be recognised as an introduction rule.  A name such as
+`trans' that matches none of the patterns given is assumed to be an
+`Arbitrary rule' to be used with `resolve_tac'.  Often this isn't what
+you want; the heuristic is maybe correct for about 70% of the
+identifiers used in the built-in object logics.  It's a good idea to
+follow the convention for your own logics.
+
+See *Note Rule table categories:: for some discussion on future
+improvements to these features.
+
+
+File: Isamode.info,  Node: Rule table internals,  Prev: Rule Categories,  Up: Rule tables
+
+Rule table internals
+====================
+
+This final section is for lisp hackers only, who may wish to manipulate
+rule tables at the lisp level (for example, to automatically generate
+them from `.thy' files).
+
+The ruletable data is held in the variable `isa-theory-rules'.  The
+functions `isa-add-theory-rules' and `isa-add-theory-rulegroup' may be
+called to extend the ruletable variable.
+
+* Menu:
+
+* Rule table format::
+* Rule table extension functions::
+
+
+File: Isamode.info,  Node: Rule table format,  Next: Rule table extension functions,  Prev: Rule table internals,  Up: Rule table internals
+
+Rule table format
+-----------------
+
+ - Constant: isa-theory-rules
+     Table of logics and rule names for rule-table buffers.
+
+     A list of lists, one per theory or logic, like this:
+
+             ((THEORY-NAME RULEGROUP RULEGROUP ...)
+                              ...
+                              ...                   )
+
+     where THEORY-NAME is a string.  Each RULEGROUP has the form:
+
+             (RULEGROUP-NAME . [RULE RULE ...])
+
+     here RULEGROUP-NAME is a string that must contain a single word.
+     Each RULE is either a string of a single word, or `nil'; the
+     latter represents a further (unnamed) subgrouping of the rules in
+     the table, and will cause a line-break in the table.
+
+     An alternative form for a theory entry is:
+
+             (THEORY-NAME . RULES-FILENAME)
+
+     Where RULES-FILENAME is a full filename for a `.rules' file which
+     contains the ruletable for THEORY-NAME.
+
+
+File: Isamode.info,  Node: Rule table extension functions,  Prev: Rule table format,  Up: Rule table internals
+
+Rule table extension functions
+------------------------------
+
+ - Function: isa-add-theory-rules rule-list
+     Add or overwrite a rule table for a theory held in
+     `isa-theory-rules'.
+
+ - Function: isa-add-theory-rulegroup theory-name rulegroup
+     Add or overwrite a RULEGROUP for a theory in `isa-theory-rules'.
+
+
+File: Isamode.info,  Node: Listener,  Next: Theory and ML files,  Prev: Rule tables,  Up: Top
+
+Listening (and talking)
+***********************
+
+A _listener buffer_ receives a verbatim copy of every command that is
+issued to an Isabelle session.  It is useful for recording interactive
+proofs: you can cut and paste lines into an ML file to store proofs.
+Listener buffers can now also talk: you can type commands directly into
+them, and send lines to the Isabelle session.  This makes it easy to
+create proof scripts.
+
+The command to create a listener buffer is `M-x listener'.  It is
+usually bound to `C-c M-l', which is useful in single frame mode, or to
+clear the listener buffer when you start a fresh proof.
+
+ - Command: listener
+     Start a new listener buffer associated with the current Isabelle
+     interaction buffer.  This gives an error if the current buffer is
+     not an Isabelle interaction buffer.
+
+In fact, it is possible for any buffer to be treated as a listener, and
+you can easily turn listening on and off.  This makes it easy to write
+proof scripts directly into `.ML' files.
+
+ - Command: listener-minor-mode
+     Toggle listening for the current buffer.
+
+* Menu:
+
+* Listener commands::
+
+
+File: Isamode.info,  Node: Listener commands,  Prev: Listener,  Up: Listener
+
+Listener Commands
+=================
+
+The listener minor mode provides functions useful for editing proof
+scripts; you can mix and match typing in the buffer that "listens" with
+typing in and using menus from the Isabelle process buffer.
+
+You can send command lines from a listener buffer to the associated
+Isabelle process using `C-c C-l' or `C-c C-n' (which runs
+`listener-use-line').  This copies text from the start of the line, up
+to the next semi-colon that isn't enclosed in a string or comment. See
+*Note ML files:: for further details of a similar command in ML buffers.
+
+Another way of sending lines to the Isabelle process is by pasting them
+into a listener buffer with `C-c C-y' (`listener-yank-and-use'),
+instead of just `C-y'.  This is like yanking the text, going to the
+beginning of the line, and using `C-c C-n'.
+
+You can send an "undo" command to the Isabelle process with `C-c C-u'
+or `C-c C-p' (`listener-use-line').  After sending the undo, this
+attempts to move backwards to the previous interactive command.
+
+The movement functions alone are available with `C-c C-f'
+(`isa-forward-interactive-line') and `C-c C-b'
+(`isa-backward-interactive-line').
+
+Two other commands useful inside the listener are `isa-batchify' and
+`isa-unbatchify', which let you very easily create batch proofs from
+interactive ones and vise-versa.  See *Note Batchifying proofs::.  This
+makes dedicated listener buffers most useful for playing back batched
+forms of interactive proofs.  For example, you could copy a batch proof
+from a file into the listener, unbatchify it, and then watch it replay
+step by step using `C-c C-n'.
+
+
+File: Isamode.info,  Node: Theory and ML files,  Next: Display Customization,  Prev: Listener,  Up: Top
+
+Theory and ML files
+*******************
+
+As well as providing facilities for interacting with Isabelle, Isamode
+has an in-built mode for editing Isabelle's `.thy' files.  This mode
+understands the syntax for ML strings (and will insert and correct
+backslashes) and allows convenient switching to `sml-mode' in the "ML"
+section of theory files.  It provides templates to help remind you of
+the syntax for theory files.
+
+ - Command: isa-thy-mode
+     Switch the current buffer to the major mode `Theory Mode'.  This
+     command will normally be issued automatically via
+     `auto-mode-alist'.
+
+* Menu:
+
+* Theory files::
+* ML files::
+* Batchifying proofs::
+* Theory mode User Options::
+* Fontification of Theory Files::
+
+
+File: Isamode.info,  Node: Theory files,  Next: ML files,  Prev: Theory and ML files,  Up: Theory and ML files
+
+Editing theory files
+====================
+
+The theory mode understands the sections in theory files and provides
+several commands to use them.  `C-c C-n' (`isa-thy-goto-next-section')
+moves to the next section, `C-c C-p' (`isa-thy-goto-previous-section')
+moves to the previous section.  You can also use <CTRL> with the up and
+down arrow keys for this.
+
+`C-c C-t' (`isa-thy-insert-template') provides a template for the file
+or current section.  This is useful if you can't remember the syntax
+for theory files; you will be asked for text.  The templates do not
+cover all the possible variations for theory files and should be
+considered merely as prompts for each section: you are advised to read
+the Isabelle Reference Manual to understand the full situation.
+
+`C-c C-u' (`isa-thy-use-buffer') sends the buffer to an Isabelle
+process with `use_thy' (remember that this may trigger the Isabelle
+theory reading mechanism to load other files).  This is the same key
+that is used by `sml-mode'.
+
+The interaction buffer chosen (or created) by `C-c C-u' is determined
+by parsing the file.  For reliable results, you should include a special
+comment towards the start of the file, which has the form:
+       Logic Image: LOGIC-NAME
+Then the use functions will send text to the buffer that would be
+selected by `M-x isabelle <RET> LOGIC-NAME <RET>'.
+
+The <TAB> key indents the current line.  Indentation includes the
+automatic insertion of backslashes in strings that span more than one
+line.  This is handy because axioms are ML strings which are often long,
+and it is tedious to have to remember to put backslashes in the correct
+places (see the discussion in *Note Backslashes in interaction::).
+
+The key <RET> is by default bound to `newline-and-indent' so that
+backslashes are inserted automatically when you type <RET> at the end
+of a line containing an open string. See *Note Theory mode User
+Options:: for details of how to control the backslashing and indentation
+behaviour.
+
+`C-k' is bound to `isa-thy-kill-line' which behaves in the same way as
+the usual `kill-line', except there is some attempt to interpret
+continuation backslashes inside strings.  For example, `C-k' in the
+middle of a line which is continued will only delete up to the
+terminating backslash, not the end of line; `C-k' anywhere after the
+final non-whitespace character on the line will delete continuation
+backslashes when joining lines.
+
+If you find the automatic treatment of backslashes distracting and would
+rather deal with them manually, you can revert to the usual key bindings
+by putting this code in your `.emacs':
+
+             (add-hook 'isa-thy-mode-hook
+                (function (lambda ()
+                           (define-key isa-thy-mode-map "\C-k"
+                                       'kill-line)
+                           (define-key isa-thy-mode-map "\C-m"
+                                       'newline))))
+
+If `isa-thy-use-sml-mode' is non-`nil', `C-c C-c' invokes `sml-mode' as
+a minor mode in the ML section.  This is done automatically by `TAB'.
+
+`C-c C-o' finds and switches to the associated ML file, that is, the
+file with the same base name but extension `.ML' in place of `.thy'.
+
+ - Command: isa-thy-insert-template
+     Insert an entry for the current section in a `.thy' file.
+
+ - Command: isa-thy-use-buffer
+     Send the buffer to an Isabelle process with `use_thy'.  The choice
+     of Isabelle interaction buffer can be influenced with a special
+     `Logic Image:' comment.
+
+ - Command: isa-thy-find-other-file
+     Find the associated ML or theory file.  This is the file with the
+     same base name but extension `.ML' in place of `.thy'.
+
+
+File: Isamode.info,  Node: ML files,  Next: Batchifying proofs,  Prev: Theory files,  Up: Theory and ML files
+
+Editing ML files
+================
+
+Theory files may have associated ML files, typically containing proofs
+of some basic consequences of a theory's axioms.  Further ML files may
+be used with Isabelle, containing big proofs, proof procedures, and so
+on.  Isamode is intended to be used in conjunction with the Emacs mode
+for editing ML files, which is called `sml-mode'.
+
+If you visit a theory file before an ML file, `sml-mode' will be
+customized to work with Isamode.
+
+You can use `C-c C-o' (`isa-thy-find-other-file') to visit the theory
+file corresponding to an ML file -- the opposite operation to `C-c C-o'
+in theory mode.
+
+Uses of `C-c C-u' (`isa-thy-use-buffer'), `C-c C-r'
+(`isa-thy-use-region'), `C-c C-l' (`isa-thy-use-line') will send the
+buffer, region or line to an Isabelle interaction buffer.  The first
+two of these keys normally send text to an ML process buffer.  The
+logic chosen can be directed in the same way as for theory files, i.e.,
+with a `Logic Image:' comment towards the start of the file *note
+Theory files::.
+
+`isa-thy-use-line' is intended for copying lines of interactive proofs,
+to replay them.  A line is understood to be the text starting on
+current line and extending to the next semi-colon (thus it may span more
+than one buffer line).  Semi-colons inside strings and comments are
+ignored.
+
+ - Command: isa-thy-use-region
+     Send the region to an Isabelle process with `use'.  The choice of
+     Isabelle interaction buffer can be influenced with a special
+     `Logic Image:' comment.
+
+ - Command: isa-thy-use-line
+     Send the current line (delimited by semi-colons or blank lines) to
+     an Isabelle process with `use'.  The choice of Isabelle
+     interaction buffer can be influenced with a special `Logic Image:'
+     comment.
+
+ - User Option: isa-ml-file-extension
+     The file name extension to use for ML files; the default is `.ML'
+     which is used in the Isabelle distribution.
+
+
+File: Isamode.info,  Node: Batchifying proofs,  Next: Theory mode User Options,  Prev: ML files,  Up: Theory and ML files
+
+Interactive and Batch Proofs
+============================
+
+Isabelle has two forms of proof script which may be kept in ML files.
+These are "interactive proofs", which begin with `goal', and "batch
+proofs", which begin with `prove_goal'.  Interactive proofs update the
+proof state at each step, when a tactic is applied using `by'.  Batch
+proofs involve no state; they execute in a single step without output
+and can be stored in ML structures.  Batch proofs might be considered
+as a `final' form for debugged proofs; lemmas in many of the
+distributed object logics are proved with batch proofs.
+
+Isamode has functions to help you convert between interactive and batch
+proofs.  `isa-batchify' creates a batch proof from an interactive one
+and `isa-unbatchify' goes the other way.  The original versions of
+these functions were supplied in an emacs file distributed with Isabelle
+called `goalify.el', which is superseded by Isamode.
+
+Here is an example of an interactive proof:
+
+         val prems = goal FOL.thy "P & Q --> P";
+         by (resolve_tac [impI] 1);
+         by (eresolve_tac [conjE] 1);
+         by (assume_tac 1);
+         qed "easy_theorem";
+
+and here is a corresponding batch proof:
+
+         qed_goal "easy_theorem"  FOL.thy "P & Q --> P"
+          (fn prems =>
+                 [
+                 (rtac impI 1),
+                 (etac conjE 1),
+                 (assume_tac 1)
+                 ]);
+
+I created the batch proof above by typing in the interactive proof line
+by line into a `*FOL*' buffer, cutting the text from the
+`*FOL-listener*' and then using `isa-batchify' on the region.  To do
+this, you must set the mark at the start of the proof with `C-SPC', and
+move to the end (after `result'), before using `M-x isa-batchify'.
+
+Notice that the tactics involving single rules were replaced with short
+forms. The command `M-x isa-expandshorts' can be used to do this
+without converting the form of a proof.
+
+Using `M-x isa-unbatchify' on the above region converts back into an
+interactive proof:
+        val prems = goal FOL.thy "P & Q --> P";
+        by (rtac impI 1);
+        by (etac conjE 1);
+        by (assume_tac 1);
+        val easy_theorem = result();
+If you write batch proofs in ML files, it may be wise to write them in a
+regular form such as the above, so that it is possible to convert them
+back into interactive proofs in the future if you need to (for example,
+to adapt them to different theorems).
+
+ - Command: isa-batchify
+     Convert an interactive proof into a batch proof.
+
+ - Command: isa-unbatchify
+     Convert a batch proof into an interactive proof.
+
+ - Command: isa-expandshorts
+     Normalize tactics and commands, like the shell-script
+     `expandshorts' in the Isabelle distribution.  Tactic command
+     shorthands (`ba',`br',...) are expanded and long-forms with
+     singleton arguments (`resolve_tac [RULE]') are contracted (to
+     `rtac RULE').
+
+I hope future versions of these functions will be easier to use (without
+needing to set a region to use them) and more reliable -- at present
+they are a bit fussy about the format of the proofs, which should be
+pretty much as shown above.
+
+
+File: Isamode.info,  Node: Theory mode User Options,  Next: Fontification of Theory Files,  Prev: Batchifying proofs,  Up: Theory and ML files
+
+Theory mode User Options
+========================
+
+Here are some options you may use to control the layout of theory files
+and behaviour when editing theory files.
+
+ - User Option: isa-thy-heading-indent
+     Indentation for section headings.  Defaults to 0.
+
+ - User Option: isa-thy-indent-level
+     Indentation step for Isabelle theory files.  Defaults to 2.
+
+ - User Option: isa-thy-indent-strings
+     If this option is non-`nil', then indentation will take place
+     inside strings.  This is useful because often strings contain
+     logical   formulae and it is desirable to indent them according to
+     parenthesis   nesting.
+
+     The default is `t', but you may wish to disable indenting inside
+     strings if your logic uses any of the usual bracket characters in
+     unusual ways.
+
+ - User Option: isa-thy-use-sml-mode
+     If non-nil, when inside the ML section of theory files,
+     `sml-mode' will be invoked automatically, triggered by line
+     indentation that occurs with <TAB> or <RET>.
+
+
+File: Isamode.info,  Node: Fontification of Theory Files,  Prev: Theory mode User Options,  Up: Theory and ML files
+
+Fontification of Theory Files
+=============================
+
+Theory files can be automatically highlighted using `font-lock', which
+is well-integrated with Emacs (and especially XEmacs) by now.  If you
+have font-locking enabled by default, by `(setq font-lock-auto-fontify
+t)' or via the Options menu in XEmacs, theory files should be
+automatically syntax-highlighted with section heading, string and
+comment highlighting when you load and edit them.
+
+See the documentation of `font-lock.el' for more information on how to
+configure the highlighting, using the variable
+`isa-thy-mode-font-lock-keywords'.
+
+
+File: Isamode.info,  Node: Display Customization,  Next: Acknowledgements,  Prev: Theory and ML files,  Up: Top
+
+Customizing the Display
+***********************
+
+There are two ways of customizing the frame display when using Isamode:
+by setting Emacs user-options and by setting X resources.
+
+* Menu:
+
+* Display options I::
+* Display options II::
+* X Resources::
+
+
+File: Isamode.info,  Node: Display options I,  Next: Display options II,  Prev: Display Customization,  Up: Display Customization
+
+Display options
+===============
+
+The user options controlling the display mostly appear in the file
+`isa-display.el'.
+
+ - User Option: isa-multiple-frame-mode
+     If non-`nil', use multiple Emacs 19 frames.  Setting this to `nil'
+     in Emacs 19 varieties restricts Isabelle-interaction mode to use a
+     single frame; the default is `t' for Emacs 19 varieties, when
+     running in a window system environment.
+
+ - User Option: isa-startup-defaults
+     This is a list of symbols which indicates the associated buffers to
+     initialise when an Isabelle session is started.  The default is
+     `'(proofstate ruletable)', which means that a table of rules and
+     and a proof state display will be shown.  You can add to or remove
+     from the list according to your working preferences, choosing from:
+
+              `proofstate'
+          `ruletable'
+          `listener'
+
+
+ - User Option: isa-default-menubar
+     This is the base menubar (in XEmacs format) for Isabelle
+     interaction mode; the default value is `(nil)', which means the
+     only menus that appear are the Isabelle ones.  You can set this to
+     `default-menubar' (in XEmacs) or `t' (in FSF Emacs), to have the
+     usual menus in addition. This may clutter the display a little, or
+     result in menus being lost off the end of the menubar!
+
+ - User Option: isa-use-long-ruletables
+     If non-`nil', use long-form of ruletables, which include section
+     headings.  Probably best set to `nil' for single-frame working.
+     This defaults to `t' in window environments.
+
+
+File: Isamode.info,  Node: Display options II,  Next: X Resources,  Prev: Display options I,  Up: Display Customization
+
+Display options, continued
+==========================
+
+ - User Option: isa-single-frame-display-props
+     This variable controls the default heights for the various
+     Isabelle buffers in single frame mode, and also a "shrink to fit"
+     attribute.  It is an association list of mode symbols and cons
+     cells, which defaults to:
+
+          (setq isa-single-frame-display-props
+             ((proofstate-mode     (window-height . 8))
+              (listener-mode       (window-height . 5))
+              (ruletable-mode      (window-height . 15))
+              (ruletable-mode      (shrink-to-fit . t)))
+          )
+
+     (Note: these properties are implemented inside Isamode and are not
+     a standard part of Emacs.)
+
+ - User Option: isa-multi-frame-display-props
+     This variable controls the the default frame parameters for
+     multiple frame mode.  It is an association list used to set symbol
+     properties.
+
+The default value of `isa-multi-frame-display-props' is in the file
+`isa-display.el':
+
+     (setq isa-multi-frame-display-props
+       '((proofstate-mode     (frame-name . proofstate))
+         (listener-mode       (frame-name . listener))
+         (ruletable-mode      (frame-name . ruletable))
+         (isa-mode            (frame-name . isabelle))
+         (ruletable           (instance-limit . 3))
+         (ruletable           (max-frame-height . 25))
+         (ruletable           (frame-defaults .
+                                ((top . 560)   (left . 5)
+                                 (height . 22) (width . 60)
+                                 (menu-bar-lines . 0)
+                                 (minibuffer . nil)
+                                 )))
+         (isabelle            (frame-defaults .
+                               ((top .  0)    (left .  0)
+                                (height . 35) (width . 80)
+                                )))
+         (listener            (frame-defaults .
+                               ((top . 620)   (left . 530)
+                                (height . 7)  (width . 65)
+                                (menu-bar-lines . 0)
+                                (minibuffer . nil)
+                                )))
+         (proofstate          (frame-defaults .
+                               ((top .  30)    (left . 700)
+                                (height . 35)  (width . 50)
+                                (menu-bar-lines . 0)
+                                (minibuffer . nil)
+                                (vertical-scroll-bars . nil)
+                                ))))
+     )
+
+This shows the setting of the frame names for the Isabelle buffer modes
+(which automatically gives them individual X-windows), and the frame
+default parameters for each of the frame names.  Some of these values
+may be inappropriate for your display, so you may wish to change them in
+your `~/.emacs'.
+
+There are also different property names understood by FSF Emacs 19 and
+XEmacs.  See *Note (elisp)Frame Parameters:: (FSF GNU Emacs) or *Note
+(lispref)Frame Parameters:: (XEmacs 19.14) for more information about
+frame parameters.
+

@@ -1,0 +1,22 @@
+Prod
+ Pair_inject  fst_conv  snd_conv  split  
+ surjective_pairing  
+ SigmaI  SigmaE 
+Sum
+ inj_Inl  inj_Inr  sumE  
+ sum_case_Inl  sum_case_Inr  
+ surjective_sum  Inl_not_Inr 
+Nat
+ nat_induct  
+ Suc_not_Zero  inj_Suc  n_not_Suc_n  
+ pred_natI  pred_natE  n  
+ nat_case_0  nat_case_Suc  
+ wf_pred_nat  
+ nat_rec_0  nat_rec_Suc 
+Less-than
+ less_trans  lessI  zero_less_Suc  
+ less_not_sym  less_not_refl  not_less0  
+ Suc_less_eq  less_induct  less_linear 
+List
+ list_induct  Cons_not_Nil  Cons_Cons_eq  
+

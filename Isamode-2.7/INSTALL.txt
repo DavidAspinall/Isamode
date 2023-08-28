@@ -1,0 +1,84 @@
+----------------------------------------------------------------------
+              Isamode -- GNU Emacs support for Isabelle
+
+                    Installation Instructions.
+----------------------------------------------------------------------
+
+Isamode 2.7 has been designed for use with Isabelle99.
+
+This means there is little configuration needed since the 'isatool'
+script provides the settings and functions Isamode needs.
+
+Here's what to do:
+
+1. Unpack the distribution Isamode.tar.gz somewhere suitable.
+   The recommended place is $ISABELLE_HOME/contrib/Isamode, where
+   $ISABELLE_HOME is the root of your Isabelle installation.
+
+2. You don't need to edit any elisp, provided:
+
+     (i) $ISAMODE_HOME is correctly configured in the Isabelle
+         settings file and you use $ISAMODE_HOME/elisp as the
+	 installation directory for elisp files;
+    (ii) When you start Emacs, 'isatool' is on the PATH, or
+         you use the generic interface wrapper 'Isabelle'
+         provided in Isabelle99 to start-up (in the latter case make
+         sure that ISABELLE_INTERFACE=emacs is configured in the
+         settings).
+
+   Otherwise, there are two variables you must set in the file
+   elisp/isa-site.el,
+
+      isa-isatool-command
+        Should be set to full name of 'isatool', $ISABELLE_HOME/bin/isatool.
+
+      isa-elisp-dir
+        Should be set to the installation directory of the elisp
+        files.
+
+    Instead of editing isa-site.el, these variables could be set in
+    .emacs or the site-wide Emacs initialization files.
+
+3. If you want to compile the Emacs lisp files, edit the Makefile
+   appropriately.  It also has targets for installing files, which you
+   may wish to use if the elisp files have to be installed somewhere
+   different.  You may also want to build and install the info
+   documentation files.
+   IMPORTANT NOTE:  to allow the defaults for variables to be
+   recalculated each time Isamode is entered, it is recommended that
+   you DELETE the compiled files isa-site.elc and isa-load.elc.
+
+4. You can activate Isamode in a fresh Emacs session using the generic
+   interface wrapper 'Isabelle' provided in Isabelle 94-8.  Otherwise,
+   you may like to make Isamode available to any Emacs session.  To do
+   this you must add this line to your .emacs or site-wide
+   initialisation:
+
+         (load-file "<path>/isa-site")
+
+   Where <path> is the path to where you installed the elisp files
+   (perhaps $ISAMODE_HOME/elisp if you did not need to move them).
+
+5. You may want to customize Isamode to your preferences.  There are
+   numerous user options. You can list them in the usual way, with M-x
+   list-options.  Many of the user-customizable variables are declared
+   in isa-load.el (but set them using setq's in your .emacs file).
+   For more details, see the Isamode documentation.
+   
+6. Isamode documentation.  There is a TeXinfo file and Makefile in the
+   directory doc/.  Provided you have the appropriate tools, you can
+   build info, dvi or HTML files from this source.  If you do not have
+   the tools, you can find dvi and HTML versions of the documentation
+   on my web page,
+
+      http://www.dcs.ed.ac.uk/home/da/Isamode.html
+      http://www.dcs.ed.ac.uk/home/da/Isamode.dvi.gz
+      
+   To install the info files you will need to copy them to somewhere
+   on the Emacs Info-directory-list path, or add the doc directory to
+   that list, with:
+
+     (setq Info-directory-list
+	   (cons "$ISAMODE_HOME/doc" Info-directory-list))
+
+   (substitute the angle brackets for the real pathname).  

@@ -1,0 +1,51 @@
+Equality
+ refl_type  refl_elem  
+ sym_type  sym_elem  
+ trans_type  trans_elem  
+ equal_types  equl_typesL  
+ subst_type  subst_typeL  
+ subst_elem  subst_elemL  
+ replace_type  subst_eqtyparg  
+ refl_ref  red_if_equal  trans_red 
+N-type
+ NF  
+ NI0  NI_succ  NI_succL  
+ NE  NEL  
+ NC0  NC_succ  zero_ne_succ 
+Prod-type
+ ProdF  ProdFL  
+ ProdI  ProdIL  
+ ProdE  ProdEL  subst_prodE  
+ ProdC  ProdC2 
+Sum-type
+ SumF  SumFL  
+ SumI  SumIL  SumIL2  
+ SumE  SumEL  SumE_fst  SumE_snd  
+ SumC  
+ fst_def  snd_def 
+Plus-type
+ PlusF  PlusFL  
+ PlusI_inl  PlusI_inlL  
+ PlusI_inr  PlusI_inrL  
+ PlusE  PlusEL  
+ PlusC_inl  PlusC_inr 
+Eq-type
+ Eqf  EqFL  EqI  EqE  EqC 
+F-type
+ FF  FE  FEL 
+T-type
+ TF  TI  TE  TEL  TC 
+Arith
+ add_def  diff_def  absdiff_def  mult_def  mod_def  
+ quo_def  
+ add_typing  addC0  addC_succ  add_assoc  add_commute  
+ mult_typing  multC0  multC_succ  mult_assoc  mult_commute 
+ 
+ add_mult_dist  
+ diff_typing  diffC0  diff_0_eq_0  diff_succ_succ  
+ diff_self_eq_0  add_inverse_diff  add_assoc  add_commute 
+Rule-Lists
+ form_rls  formL_rls  
+ intr_rls  intrL_rls  
+ elim_rls  elimL_rls  
+ comp_rls  basic_defs 

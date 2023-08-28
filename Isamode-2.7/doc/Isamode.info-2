@@ -1,0 +1,634 @@
+This is Isamode.info, produced by makeinfo version 4.0 from
+Isamode.texi.
+
+
+File: Isamode.info,  Node: X Resources,  Prev: Display options II,  Up: Display Customization
+
+X Resources
+===========
+
+Frame properties are an unsatisfactory part of the Emacs window
+interface: the kind of settings they control are more appropriate to the
+X resources database.  Unfortunately, not all Emacsen recognise X
+resources, or recognize them properly.
+
+   * In FSF Emacs 19, whether X resources are recognized properly
+     depends on the version you have and how it was built at your site.
+     You should try to see if they work for you.
+
+   * In XEmacs, X resources may be reliably used in place of
+     `isa-multi-frame-display-props'.
+
+Here are some sample X defaults for XEmacs that work well on my X
+terminal.  For FSF Emacs, the preceding `Emacs*' should be removed.
+See the files `Xdefaults-lemacs' and `Xdefaults-emacs19' in the Isamode
+distribution for more examples, and the documentation in *note
+(emacs)Resources X::.  Further details are in *note (elisp)X Frame
+Parameters::.
+
+     /*  ===== X resources for Isamode in XEmacs ===== */
+     
+     /* some frame geometries. */
+     
+     Emacs*listener.geometry:   55x10
+     Emacs*ruletable.geometry:  57x15
+     Emacs*proofstate.geometry: 52x35
+     
+     /* ruletable frames have large red headings */
+     
+     Emacs*ruletable.ruletableGroupname.attributeFont:  \
+             -adobe-helvetica-bold-r-normal--*-160-75-75-*-*-iso8859-1
+     
+     Emacs*ruletable.ruletableGroupname.attributeForeground: red
+     
+     /* proofstate frames have bold goal subgoal numbers */
+     
+     Emacs*proofstate.proofstateGoal.attributeFont:  \
+             -adobe-courier-bold-r-normal--*-140-75-75-*-*-iso8859-1
+     Emacs*proofstate.proofstateSubgoalNumber.attributeFont:  \
+             -adobe-courier-bold-r-normal--*-140-75-75-*-*-iso8859-1
+
+Frame properties take precedence over X resources, so you will need
+        (setq isa-multi-frame-display-props
+         '((proofstate-mode     (frame-name . proofstate))
+           (listener-mode       (frame-name . listener))
+           (ruletable-mode      (frame-name . ruletable))
+           (isa-mode            (frame-name . isabelle))
+           (ruletable           (instance-limit . 3))))
+or something similar in your `~/.emacs' to ensure the resource
+specifications have effect.
+
+
+File: Isamode.info,  Node: Acknowledgements,  Next: Obtaining the software,  Prev: Display Customization,  Up: Top
+
+Acknowledgements
+****************
+
+My thanks go to the following people for their suggestions, testing and
+bug-reports:
+   * Sara Kalvala,
+
+   * Larry Paulson,
+
+   * Christian Prehofer,
+
+   * Tobias Nipkow,
+
+   * Chris Owens,
+
+   * Ole Steen Rasmussen,
+
+   * Claudio Russo,
+
+   * Markus Wenzel.
+
+I am happy to receive any grateful comments, clever suggestions, or
+moaning reports of problems concerning this program and its
+documentation.  The only rewards for developing Isamode are your
+feedback and the nefarious pleasures of elisp hacking, so please drop a
+line!
+
+     David Aspinall,
+     Department of Computer Science,
+     University of Edinburgh,
+     King's Buildings,
+     Edinburgh.
+     email: `David.Aspinall@dcs.ed.ac.uk'
+
+
+File: Isamode.info,  Node: Obtaining the software,  Next: Installing Isamode,  Prev: Acknowledgements,  Up: Top
+
+Obtaining the software
+**********************
+
+Isamode
+=======
+
+The Isamode distribution consists of Emacs lisp files and documentation.
+You can obtain the latest version by anonymous `ftp' from Edinburgh.
+
+  1. Connect to `ftp ftp.dcs.ed.ac.uk'
+
+  2. Login as `anonymous' with your internet address as password
+
+  3. `type binary'
+
+  4. `cd pub/da'
+
+  5. `get Isamode.tar.gz'
+
+It's easier inside Emacs! With `ange-ftp' (in version 19's) -- visit
+the directory
+        /anonymous@ftp.dcs.ed.ac.uk:pub/da/
+move to the file `Isamode.tar.gz' and press <C> to copy the file to a
+local directory.
+
+The file `Isamode.tar.gz' should be gunzipped, then extracted using tar:
+        gunzip -c Isamode.tar.gz | tar xf -
+
+Please tell me if you have any problems.
+
+Isabelle
+========
+
+Of course, Isamode is useless without Isabelle!
+
+Isabelle is available by anonymous ftp from the University of Cambridge.
+Instructions:
+
+  1. Connect to `ftp.cl.cam.ac.uk'
+
+  2. Login as `ftp' with your internet address as password
+
+  3. `type binary'
+
+  4. `cd ml'
+
+  5. `get Isabelle94.tar.gz'
+
+The file `Isabelle94.tar.gz' should be unpacked as described above.
+When unpacked, the file `COPYRIGHT' contains the Copyright notice and
+Disclaimer of Warranty.
+
+
+File: Isamode.info,  Node: Installing Isamode,  Next: Ideas and Dreams,  Prev: Obtaining the software,  Up: Top
+
+Installing Isamode
+******************
+
+The current version of Isamode should work with these Emacs versions:
+   *  XEmacs 19.15  (probably 19.14 too)
+
+   *  FSF GNU Emacs 19.34
+Version 2.2 of Isamode was the last to be compatible with GNU Emacs
+version 18.  If you are still using Emacs 18, you are behind the times!
+
+I recommend that you use XEmacs.  It provides a much nicer environment
+than FSF Emacs and Isamode works better with it.  Future versions of
+Isamode may not be compatible with FSF Emacs at all; the effort of
+supporting both Emacs versions is too great.
+
+To install Isamode, you need to do the following things:
+  1.  Edit the file `isa-site.el'.  Here you must edit the variable
+     ISA-ISATOOL-COMMAND to be the full path name for the command
+     `isatool', if it is not on your `PATH' by default.  If it  _is_ on
+     `PATH' when Emacs is started, you may not need to do  any
+     customization at all.
+
+  2.  Edit the file `Makefile'.  There are two variables to  control
+     where the files are to be installed.
+
+  3.  Execute the command `make compile' to create `.elc' files
+
+  4.  Execute the command `make install' to install `.el' and `.elc'
+     files.  It may be most convenient to put the file `isa-site.el'
+     somewhere on the Emacs load path.
+
+  5.  If you want to start Isabelle from inside any Emacs session, add
+     the line:
+             (load "isa-site")
+      to an Emacs site-default file or your personal `~/.emacs'.
+     Otherwise you may wish to start special Emacs sessions for Isabelle
+     using one of the tools provided with Isabelle.
+     More detailed instructions are given in the file `INSTALL.txt'
+which is part of the distribution.  Installation should be
+straightforward, so please let me know if you have any problems.
+
+To customize Isamode, read about the user options available in *Note
+Display Customization:: and *Note Theory mode User Options::.
+
+Happy theorem proving!
+
+
+File: Isamode.info,  Node: Ideas and Dreams,  Next: Index,  Prev: Installing Isamode,  Up: Top
+
+Ideas and Dreams
+****************
+
+I believe that writing a front end inside a new-generation Emacs is a
+viable way of attaining a powerful user-interface for Isabelle and
+similar systems.  But this package is only an early experiment in that
+direction; version 19 Emacsen are in an early stage of development at
+the moment.
+
+Several ideas for future improvement of Isamode have already been
+mentioned in the text of this manual; below follows a fuller wish-list.
+
+Please feel free to send me comments on this list, more ideas to add, or
+-- even better -- offers to implement something from it!
+
+* Menu:
+
+* Proof stepping::
+* Customization per-logic::
+* Better theory handling::
+* Improved Listener::
+* Caching proof states::
+* Rule table categories::
+* Improved batchify::
+* Tracing Output::
+* Text insertion::
+* Improved templates::
+* Sensitizing rules::
+* Buttons::
+* Driving by mouse::
+* Help from Isabelle::
+* Bells and whistles::
+* Special characters::
+* Questions::
+
+
+File: Isamode.info,  Node: Proof stepping,  Next: Customization per-logic,  Prev: Ideas and Dreams,  Up: Ideas and Dreams
+
+Proof stepping
+..............
+
+More flexible ways of using `isa-thy-use-line' would be nice.
+Presently it works best inside ML files: it could be linked in with
+the listener or `*proof*' buffer (see below) in a function
+`isa-replay-proof' which grabs a proof (interactive or
+non-interactive) from an ML file into a fresh proof buffer and begins
+replaying it.  Ways of moving through interactive lines would be
+useful (they should really be part of `sml-mode').
+
+
+File: Isamode.info,  Node: Customization per-logic,  Next: Better theory handling,  Prev: Proof stepping,  Up: Ideas and Dreams
+
+Customization per-logic
+.......................
+
+We perhaps need `LOGIC.el' and even `THEORY.el'   files for
+customization per-logic and per-theory.  At present too much   is hard
+coded inside Isamode -- it would be good to have ways of   generating
+(at least first attempts at) rule tables from the theorem   databases,
+or from the HTML that is automatically generated by   Isabelle during
+building logics.  As an alternative to introducing   more files, a
+special `emacs' section could be added to theory   files.  We'd like
+ways of controlling and customizing the tactics that   appear in the
+menus and the completion table in   `isa-completion-list'.
+
+
+File: Isamode.info,  Node: Better theory handling,  Next: Improved Listener,  Prev: Customization per-logic,  Up: Ideas and Dreams
+
+Better theory handling
+......................
+
+We really need both `logic-name' and `root-logic-name', the   latter
+used for rule tables, provers, etc.  This is because people may   save
+logic images that are extensions of built-in logics.  Also, user
+logics should be provided for in a better way.  Perhaps Emacs should
+attempt to understand or communicate with Isabelle about the theory
+tree structure and make system?  Browsing of theories?
+
+
+File: Isamode.info,  Node: Improved Listener,  Next: Caching proof states,  Prev: Better theory handling,  Up: Ideas and Dreams
+
+Improved Listener
+.................
+
+It should listen actively!  A complete history of commands is a bit
+too general really, particularly when it is available in the
+interaction buffer, by paging backwards or using the comint history
+mechanism.  A better idea would be to have multiple listeners or
+`*proof*' buffers which accumulates commands since the most   recent
+"goal".  The `push_proof' commands could be interpreted to   manage
+several such buffers.  Commands issued to Isabelle which don't
+affect/reference the proofstate could be appended to a "proof
+preamble" (e.g. making lists of rules, simpsets, etc).  With a little
+bit of help from Isabelle (see below), `undo();' can be correctly
+interpreted and lines deleted from the transcript as needed.  Lines
+might be annotated with the corresponding proof level.  It can't be
+perfectly robust, of course, but we should be able to do pretty well.
+Suggested functions: `extract-interactive-proof',
+`extract-batch-proof' to create *proof* buffers from regions of   ML
+files, and a command `replay-proof-step' to step through each   command
+in an interactive proof.
+
+
+File: Isamode.info,  Node: Caching proof states,  Next: Rule table categories,  Prev: Improved Listener,  Up: Ideas and Dreams
+
+Caching proof states
+....................
+
+Stepping backward and forward through proof levels is slow, probably
+mostly due to Isabelle's pretty printer.  Emacs could cache them in an
+internal buffer, given an understanding of `undo', etc, (or at
+least, a conservative cache-flushing when the proof level is seen to
+go down).
+
+
+File: Isamode.info,  Node: Rule table categories,  Next: Improved batchify,  Prev: Caching proof states,  Up: Ideas and Dreams
+
+Rule table categories
+.....................
+
+This scheme might be improved by making use of ML's type information to
+help infer the rule category.  Type information could prevent Emacs from
+constructing an ill-typed tactic, for example, by showing the difference
+between subgoal indexed tactics (`int->tactic') and tactics the apply
+to the whole proofstate (`tactic').
+
+Type information isn't fine enough to distinguish between the different
+kinds of rules, however, so a better solution would be to add the rule
+categories to the rule tables themselves, at the expense of added
+complexity in emacs lisp.  This may be implemented in some future
+version of Isamode.  (In the meantime, and at any rate, following the
+naming convention above for your own logics is probably a good idea).
+Then general ways of handling things such as LK's `pack' type may be
+integrated.
+
+A different problem is the choice of the default tactic itself, given
+the category of the identifier.  Often you _won't_ want to apply
+`fast_tac' to everything of type `claset'!  There needs to be a more
+flexible way of specifying what the default tactic is (for example,
+based on the last menu action).
+
+
+File: Isamode.info,  Node: Improved batchify,  Next: Tracing Output,  Prev: Rule table categories,  Up: Ideas and Dreams
+
+Improved batchify
+.................
+
+`isa-batchify' could do with improving: it should be a bit more
+flexible, permitting proofs starting with `goal ...', and even   not
+ending with `result' (it might prompt for a rule name).    (Also, we
+shouldn't use `replace-regexp' in the function -- it   means undo
+doesn't work properly.)
+
+
+File: Isamode.info,  Node: Tracing Output,  Next: Text insertion,  Prev: Improved batchify,  Up: Ideas and Dreams
+
+Tracing Output
+..............
+
+Should probably appear a temporary buffer or the proof state window.
+Prompting might be in the minibuffer (or dialogue boxes?).
+
+
+File: Isamode.info,  Node: Text insertion,  Next: Improved templates,  Prev: Tracing Output,  Up: Ideas and Dreams
+
+Text insertion
+..............
+
+Is the behaviour of tactic, etc, shortcuts annoyingly inconsistent?  -
+should `assume', `resolve prems', etc, wait for <RET> to   submit
+input?  Another possibility is to use the minibuffer for input   in
+tactic-entering functions: (or editing the current line of ML) if   the
+tactic menus become accessible from the Proof State buffer, the
+Isabelle interaction buffer itself would become only of esoteric
+interest.  (for   "advanced" use!).
+
+
+File: Isamode.info,  Node: Improved templates,  Next: Sensitizing rules,  Prev: Text insertion,  Up: Ideas and Dreams
+
+Improved templates
+..................
+
+In theory mode files; `hot spots' (that disappear when you type
+something into them) are nicer than minibuffer prompting, I think.  But
+probably not worth the trouble.
+
+
+File: Isamode.info,  Node: Sensitizing rules,  Next: Buttons,  Prev: Improved templates,  Up: Ideas and Dreams
+
+Sensitizing rules
+.................
+
+Ruletable option for filtering of resolvable rules to   highlight only
+those applicable in the current proofstate.
+
+
+File: Isamode.info,  Node: Buttons,  Next: Driving by mouse,  Prev: Sensitizing rules,  Up: Ideas and Dreams
+
+Buttons
+.......
+
+They're quicker to use than pull-down menus: we might have a special
+buffer of them (e.g. Tactics table), a special section in the
+ruletable buffer, or tool bars.  In a tactics table we could have
+standard tactics, and then additional tactics on a per-logic basis.
+But we probably don't really want a proliferation of windows ...
+
+
+File: Isamode.info,  Node: Driving by mouse,  Next: Help from Isabelle,  Prev: Buttons,  Up: Ideas and Dreams
+
+Driving by mouse
+................
+
+We're on the way a completely mouse-driven interface.  Whether you
+want to use a mouse or not, it should be possible to use the mouse
+most of the time, for simple proofs.  More control keys for the
+interaction buffer would be useful (for example, completion on rule
+names after all).
+
+
+File: Isamode.info,  Node: Help from Isabelle,  Next: Bells and whistles,  Prev: Driving by mouse,  Up: Ideas and Dreams
+
+Help from Isabelle
+..................
+
+Several of the improvements suggested so far would benefit from
+`behind the scenes' interaction with Isabelle.  At the moment, the
+interface is fairly simple minded - proof states are displayed in
+another buffer simply by removing anything from Isabelle's output that
+looks like a list of subgoals.  It would probably be better to get
+Isabelle to participate actively in the interaction, writing some of
+the interface code in ML and sending special control sequences to
+Emacs.  It would probably be more appropriate to site all of the rule
+table data, tactic names, etc, within Isabelle.
+
+
+File: Isamode.info,  Node: Bells and whistles,  Next: Special characters,  Prev: Help from Isabelle,  Up: Ideas and Dreams
+
+Bells and whistles
+..................
+
+Icon bitmaps, colours, more fontification, etc, etc .... It might be
+good to highlight and tag completed proofs somehow, or annotate in
+some way.  Also, implement "intelligent" filtering.
+
+
+File: Isamode.info,  Node: Special characters,  Next: Questions,  Prev: Bells and whistles,  Up: Ideas and Dreams
+
+Special characters
+..................
+
+Isamode has rudimentary support for the special X fonts with symbols,
+via the variable `isa-use-special-font'.   The 8-bit input   functions
+provided in the Isabelle distribution are not yet integrated   (I tried
+them once and locked up my keyboard!).  This is future work,
+including automatic processing of theory files to convert between the
+symbol format and the long-hand TeX-oriented names.
+
+
+File: Isamode.info,  Node: Questions,  Prev: Special characters,  Up: Ideas and Dreams
+
+Questions
+.........
+
+What ideas or improvements are missing from the above list?
+What are the priorities?
+What's the state of art in other theorem prover interfaces?
+Which things can be done usefully and easily inside Emacs and which
+not?
+
+File: Isamode.info,  Node: Index,  Next: Copying,  Prev: Ideas and Dreams,  Up: Top
+
+Index
+*****
+
+* Menu:
+
+* Arbitrary rule:                        Naming convention table.
+* Associated files:                      ML files.
+* Author's address:                      Acknowledgements.
+* Choosing which logic:                  Logic choice.
+* Classical rule set:                    Naming convention table.
+* comint:                                Interacting with Isabelle.
+* comint-dynamic-complete:               Completion.
+* Compatible Emacs versions:             Installing Isamode.
+* Creating rule tables:                  Creating rule tables.
+* Customizing the display:               Display Customization.
+* Definition:                            Naming convention table.
+* Designated subgoal:                    Proofstate commands.
+* Destruction rule:                      Naming convention table.
+* Display customization:                 Display Customization.
+* Dreams:                                Ideas and Dreams.
+* Editing ML files:                      ML files.
+* Editing theory files:                  Theory files.
+* Elimination rule:                      Naming convention table.
+* Fontification:                         Fontification of Theory Files.
+* Frame customization:                   Display Customization.
+* ftp:                                   Obtaining the software.
+* Future plans:                          Ideas and Dreams.
+* goalify.el file:                       Batchifying proofs.
+* Indexed tactic:                        Naming convention table.
+* Installing Isamode:                    Installing Isamode.
+* Interacting with Isabelle:             Interacting with Isabelle.
+* Interaction buffer:                    Interacting with Isabelle.
+* Interaction menu operations:           Interaction menu operations.
+* Introduction rule:                     Naming convention table.
+* isa-add-theory-rulegroup:              Rule table extension functions.
+* isa-add-theory-rules:                  Rule table extension functions.
+* isa-asm_full_simp_tac:                 Interaction menu operations.
+* isa-asm_simp_tac:                      Interaction menu operations.
+* isa-assume_tac:                        Interaction menu operations.
+* isa-back:                              Interaction menu operations.
+* isa-batchify:                          Batchifying proofs.
+* isa-best_tac:                          Interaction menu operations.
+* isa-chop:                              Interaction menu operations.
+* isa-choplev:                           Interaction menu operations.
+* isa-completion-list:                   Completion.
+* isa-contr_tac:                         Interaction menu operations.
+* isa-cut_facts_tac:                     Interaction menu operations.
+* isa-cut_facts_tac-prems:               Interaction menu operations.
+* isa-default-menubar:                   Display options I.
+* isa-dmatch_tac:                        Interaction menu operations.
+* isa-dresolve_tac:                      Interaction menu operations.
+* isa-ematch_tac:                        Interaction menu operations.
+* isa-eq_assume_tac:                     Interaction menu operations.
+* isa-eq_mp_tac:                         Interaction menu operations.
+* isa-eresolve_tac:                      Interaction menu operations.
+* isa-expandshorts:                      Batchifying proofs.
+* isa-fast_tac:                          Interaction menu operations.
+* isa-fold_goals_tac:                    Interaction menu operations.
+* isa-forward_tac:                       Interaction menu operations.
+* isa-goal-thy:                          Interaction menu operations.
+* isa-goalw-thy:                         Interaction menu operations.
+* isa-match_tac:                         Interaction menu operations.
+* isa-match_tac-prems:                   Interaction menu operations.
+* isa-menus:                             Menus.
+* isa-ml-file-extension:                 ML files.
+* isa-mp_tac:                            Interaction menu operations.
+* isa-multi-frame-display-props:         Display options II.
+* isa-multiple-frame-mode:               Display options I.
+* isa-pop-proof:                         Interaction menu operations.
+* isa-push-proof:                        Interaction menu operations.
+* isa-resolve_tac:                       Interaction menu operations.
+* isa-resolve_tac-prems:                 Interaction menu operations.
+* isa-result:                            Interaction menu operations.
+* isa-rewrite_goals_tac:                 Interaction menu operations.
+* isa-rewrite_tac:                       Interaction menu operations.
+* isa-rotate-proofs:                     Interaction menu operations.
+* isa-ruletable-paths:                   Rule tables.
+* isa-send-input:                        Backslashes in interaction.
+* isa-session-prelude:                   Startup sequence.
+* isa-simp_tac:                          Interaction menu operations.
+* isa-single-frame-display-props:        Display options II.
+* isa-startup-defaults:                  Display options I.
+* isa-step_tac:                          Interaction menu operations.
+* isa-theory-rules:                      Rule table format.
+* isa-thy-find-other-file:               Theory files.
+* isa-thy-heading-indent:                Theory mode User Options.
+* isa-thy-indent-level:                  Theory mode User Options.
+* isa-thy-indent-strings:                Theory mode User Options.
+* isa-thy-insert-template:               Theory files.
+* isa-thy-mode:                          Theory and ML files.
+* isa-thy-use-buffer:                    Theory files.
+* isa-thy-use-line:                      ML files.
+* isa-thy-use-region:                    ML files.
+* isa-thy-use-sml-mode:                  Theory mode User Options.
+* isa-unbatchify:                        Batchifying proofs.
+* isa-undo:                              Interaction menu operations.
+* isa-use-long-ruletables:               Display options I.
+* isabelle:                              Interacting with Isabelle.
+* isabelle-session:                      Logic choice.
+* Isamode:                               Introduction.
+* Large proof states:                    Large Proof states.
+* listener:                              Listener.
+* Listener buffer:                       Listener.
+* Listener commands:                     Listener commands.
+* listener-minor-mode:                   Listener.
+* Logic:                                 Logic choice.
+* Logic Image comment:                   Theory files.
+* ML:                                    ML files.
+* ML identifiers:                        Rule Categories.
+* ML mode (sml-mode):                    ML files.
+* ML types:                              Rule table categories.
+* Naming conventions:                    Rule Categories.
+* Obtaining Isamode:                     Obtaining the software.
+* Proof levels:                          Proofstate commands.
+* Proof state buffer:                    Proofstate.
+* proofstate:                            Proofstate.
+* Rule categories:                       Rule Categories.
+* Rule set:                              Naming convention table.
+* Rule tables:                           Rule tables.
+* Rule tables, format:                   Rule table format.
+* Rule tables, making:                   Rule table extension functions.
+* Rule, arbitrary:                       Naming convention table.
+* Rule, destruction:                     Naming convention table.
+* Rule, elimination:                     Naming convention table.
+* Rule, introduction:                    Naming convention table.
+* ruletable:                             Rule tables.
+* Ruletable commands:                    Ruletable commands.
+* Simplifier rule set:                   Naming convention table.
+* sml-mode:                              ML files.
+* Subgoal list:                          Proofstate.
+* Tactic:                                Naming convention table.
+* Tactic, indexed:                       Naming convention table.
+* Theory files:                          Theory files.
+* Theory files, highlighting:            Fontification of Theory Files.
+* Theory mode user options:              Theory mode User Options.
+* User options, display:                 Display Customization.
+* User options, logic image path:        Logic choice.
+* User options, theory mode:             Theory mode User Options.
+* X Resources:                           X Resources.
+
+
+File: Isamode.info,  Node: Copying,  Prev: Index,  Up: Top
+
+Copying
+*******
+
+This info file and the program Isamode are
+
+     Copyright (C) 1994-2000 David R. Aspinall and LFCS.
+
+Both are distributed under the terms of the GNU General Public License,
+which you should find with your copy of GNU Emacs.
+
+The program Isabelle is Copyright (C) by the University of Cambridge.
+
+Documentation dated: 2000/3/13
+
+

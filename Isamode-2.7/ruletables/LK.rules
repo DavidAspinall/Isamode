@@ -1,0 +1,20 @@
+Structural
+ basic  thinR  thinL  cut 
+Equality
+ refl  sym  trans  symL 
+Propositions
+ TrueR  iffR  iffL  True_def  iff_def  
+ conjR  conjL  
+ disjR  disjL  
+ impR  impL  
+ notR  notL  
+ FalseL 
+Quantifiers
+ allR  allL  allL_thin  
+ exR  exL  exR_thin  
+ The 
+Tactics
+ reresolve_tac  repeat_goal_tac  pc_tac  
+ safe_goal_tac  step_tac  fast_tac  best_tac 
+Rule-packs
+ empty_pac  prop_pac  LK_pack  LK_dup_pack 

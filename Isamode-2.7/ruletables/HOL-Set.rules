@@ -1,0 +1,26 @@
+Quantifiers
+ ballI  bspec  ballE  
+ bexI  bexCI  bexE 
+Subsets
+ subsetI  subsetD  subsetCE  subset_refl  subset_trans  
+ equalityI  equalityD1  equalityD2  equalityE  equalityCE  
+ Union_upper  Union_least  Un_uper1  Un_upper2  Un_least  
+ Inter_lower  Inter_greatest  Int_lower1  Int_lower2  
+ Int_greatest 
+Comprehension
+ CollectI  CollectD  CollectE 
+Compl,Un,Int
+ ComplI  ComplD  
+ UnI1  UnI2  UnCI  UnE  
+ IntI  IntD1  IntD2  IntE 
+UN,INT
+ UnionI  UnionE  UN_I  UN_E  
+ InterI  InterD  InterE  INT_I  INT_D  INT_E 
+Finite-Sets
+ emptyE  insertI1  insertI2  insertE 
+Functions
+ Inv_f_f  f_Inv_f  
+ imageI  imageE  rangeI  rangeE  
+ monoI  monoD  
+ injI  inj_inverseI  injD  
+ inj_onto_inverseI  inj_onto_contraD 

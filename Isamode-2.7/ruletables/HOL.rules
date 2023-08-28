@@ -1,0 +1,24 @@
+Equality
+ refl  sym  trans  subst  ssubst  box_equals  arg_cong  
+ fun_cong  eqTrueI  eqTrueE 
+Propositions
+ conjI  conjunct1  conjunct2  conjE  
+ disjI1  disjI2  disjE  
+ notI  notE  
+ impI  mp  impE  
+ iffI  iffE  iffD1  iffD2 
+Quantifiers
+ allI  spec  allE  all_dupE  
+ exI  exE  
+ ex1I  ex1E  
+ selectI  select_equality 
+Classical
+ ccontr  classical  excluded_middle  
+ disjCI  exCI  impCE  iffCE  
+ notnotD  swap 
+Definitions
+ True_def  All_def  Ex_def  False_def  not_def  and_def  
+ or_def  Ex1_def  Inv_def  o_def  if_def 
+Rule-sets
+ HOL_ss (!simpset)
+ prop_cs  HOL_cs  set_cs 

@@ -1,0 +1,51 @@
+/*
+     Some sample X defaults for Lucid Emacs
+
+     No guarantees! Your mileage may vary depending on site specifics...
+*/
+
+#define SmallSize  120
+#define NormalSize 140
+#define BigSize    160
+
+#define TextFont(wght,slant,size) \
+	-adobe-courier-wght-slant-normal--*-size-75-75-*-*-iso8859-1
+
+#define ButtonFont(wght,slant,size) \
+	-adobe-helvetica-wght-slant-normal--*-size-75-75-*-*-iso8859-1
+
+/* Some general resources... */
+
+Emacs*emacs.geometry:            80x50
+Emacs*default.attributeFont:     TextFont(medium,r,140)
+Emacs*menubar.font:		 ButtonFont(bold,r,NormalSize)
+
+
+
+/* For Isamode... */
+
+Emacs*listener.geometry:   55x10
+Emacs*ruletable.geometry:  57x15
+Emacs*proofstate.geometry: 52x35
+
+
+/* ruletable screens have a small default text and larger headings */
+
+Emacs*ruletable.default.attributeFont:         ButtonFont(medium,r,NormalSize)
+Emacs*ruletable.default.attributeBackground:   white
+Emacs*ruletable.default.attributeForeground:   black
+Emacs*ruletable.highlight.attributeFont:       ButtonFont(medium,r,NormalSize)
+Emacs*ruletable.highlight.attributeBackgroundPixmap: \
+					       gray1
+Emacs*ruletable.modeline.attributeFont:        TextFont(medium,r,SmallSize)
+Emacs*ruletable.modeline.attributeBackground:  black
+Emacs*ruletable.modeline.attributeForeground:  white
+Emacs*ruletable.ruletable-groupname.attributeFont:  \
+					       ButtonFont(bold,r,140)
+
+/* proofstate screens have big goal and bold subgoal numbers */
+ 
+Emacs*proofstate.proofstateGoal.attributeFont:  TextFont(bold,r,BigSize)
+Emacs*proofstate.proofstateSubgoalNumber.attributeFont:  \
+						TextFont(bold,r,NormalSize)
+

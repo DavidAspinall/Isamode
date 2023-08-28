@@ -1,0 +1,63 @@
+/* 
+     Some sample X defaults for Isabelle mode in FSF Emacs 19.xx
+
+     No guarantees!  Your mileage may vary depending on site specifics...
+
+     The usefulness of these depends on which xx you have, and whether
+     it is compiled with the x-toolkit option (pretty menus).  Please
+     read the Emacs documentation for more help, but beware that
+     present versions may be buggy and incomplete.
+*/
+
+#define SmallSize  120
+#define NormalSize 140
+#define BigSize    160
+
+#define TextFont(wght,slant,size) \
+	-adobe-courier-wght-slant-normal--*-size-75-75-*-*-iso8859-1
+
+#define ButtonFont(wght,slant,size) \
+	-adobe-helvetica-wght-slant-normal--*-size-75-75-*-*-iso8859-1
+
+
+/* Some general resources... */
+
+Emacs*geometry:       80x50
+Emacs*selectionFont:  ButtonFont(bold,r,SmallSize)
+Emacs*paneFont:	      ButtonFont(bold,r,NormalSize)
+Emacs*font:           TextFont(medium,r,NormalSize)
+Emacs*bitmapIcon:     gnu.icon
+
+/* for X toolkit version */
+
+Emacs*menubar.font:    ButtonFont(bold,r,NormalSize)
+Emacs*popup.font:      ButtonFont(bold,r,SmallSize)
+Emacs*shadowThickness: 2
+
+Emacs*Foreground:		black
+Emacs*SelectionForeground:	white
+Emacs*menuBackground:		SeaGreen
+Emacs*paneForeground:		white
+Emacs*modeline.attributeBackground:	Sienna
+Emacs*modeline.attributeForeground:	white
+
+
+/* For Isamode... */
+
+/* geometry specs... 
+   (these don't work for emacs-version <= 19.25 */
+isabelle.geometry:   80x40+0+0
+listener.geometry:   55x10+610+530
+ruletable.geometry:  57x15+5+590
+proofstate.geometry: 52x35+670+25
+
+/* fonts... */
+isabelle.font:     TextFont(medium,r,NormalSize)
+listener.font:     TextFont(medium,r,NormalSize)
+ruletable.font:    TextFont(medium,r,NormalSize)
+proofstate.font:   TextFont(medium,r,NormalSize)
+
+/* faces... */
+Emacs.ruletableGroupname.attributeFont:      TextFont(bold,o,NormalSize)
+Emacs.proofstateGoal.attributeFont:          TextFont(bold,r,NormalSize)
+Emacs.proofstateSubgoalNumber.attributeFont: TextFont(bold,o,NormalSize)

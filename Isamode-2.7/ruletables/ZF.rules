@@ -1,0 +1,52 @@
+Quantifiers
+ ballI  bspec  ballE  ball_cong  
+ bexI  bexCI  bexE  bex_cong 
+Subsets
+ subsetI  subsetD  subsetCE  subset_refl  subset_trans  
+ PowI  PowD  
+ equalityI  equalityD1  equalityD2  equalityE 
+Comprehension
+ ReplaceI  ReplaceE  RepFunI  RepFunE  
+ separation  
+ CollectI  CollectE  CollectD1  CollectD2 
+Un,Int,-
+ UnI1  UnI2  UnCI  UnE  
+ IntI  IntD1  IntD2  IntE  
+ DiffI  DiffD1  DiffD2  DiffE 
+UN,INT
+ UnionI  UnionE  UN_I  UN_E  
+ InterI  InterD  InterE  INT_I  INT_E 
+Finite-Sets
+ emptyE  empty_subsetI  equals0I  equals0D  
+ singletonI  singletonE  
+ consI1  consI2  consCI  consE 
+Succ,if,THE
+ succI1  succI2  succCI  succE  succ_neq_0  succ_inject  
+ if_P  if_not_P  
+ the_equality  theI 
+Properties
+ mem_anti_sym  mem_anti_refl  
+ Union_upper  Union_least  Un_upper1  Un_upper2  Un_least  
+ Inter_lower  Inter_greatest  Int_lower1  Int_lower2  
+ Int_greatest  
+ Diff_subset  Diff_contains  
+ Collect_subset 
+Pairs
+ pairing  UpairI1  UpairI2  UpairE  
+ fst  snd  split  Pair_inject1  Pair_inject2  Pair_inject  
+ Pair_neq_0  
+ SigmaI  SigmaE  SigmaE2 
+Relations
+ domainI  domainE  domain_subset  
+ rangeI  rangeE  range_subset  
+ fieldI1  fieldI2  fieldCI  fieldE  field_subset  
+ imageI  imageE  vimageI  vimageE 
+Functions
+ lamI  lamE  lam_type  beta  eta  lam_theI  
+ fun_empty  fun_single  fun_disjoint_Un  
+ fun_disjoint_apply1  fun_disjoint_apply2 
+Axioms
+ Ball_def  Bex_def  subset_def  extension  union_iff  
+ power_set  foundation  replacement 
+Rule-sets
+ ZF_ss  lemmas_cs  upair_cs  ZF_cs 

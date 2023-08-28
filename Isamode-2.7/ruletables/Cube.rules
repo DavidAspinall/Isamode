@@ -1,0 +1,20 @@
+basic
+ s_b  strip_s  strip_b  
+ app  beta 
+simple
+ simple  pi_ss  lam_ss 
+L2
+ L2  pi_ss  pi_bs  lam_ss  lam_bs 
+Lomega
+ Lomega  pi_ss  pi_bb  lam_ss  lam_bb 
+LOmega
+ LOmega  pi_ss  pi_bb  pi_bs  lam_ss  lam_bb  lam_bs 
+LP
+ LP  pi_ss  pi_sb  lam_ss  lam_sb 
+LP2
+ LP2  pi_ss  pi_sb  pi_bs  lam_ss  lam_sb  lam_bs 
+LPomega
+ LPomega  pi_ss  pi_sb  pi_bb  lam_ss  lam_sb  lam_bb 
+CC
+ CC  pi_ss  pi_bs  pi_bb  pi_sb  lam_ss  lam_bs  lam_bb  
+ lam_sb 

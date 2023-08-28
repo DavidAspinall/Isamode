@@ -1,0 +1,2537 @@
+\input texinfo     @c -*-texinfo-*-
+@comment %**start of header
+@setfilename Isamode.info
+@settitle Isamode
+@paragraphindent 0
+@c footnotestyle separate
+@iftex
+@afourpaper
+@end iftex
+@comment %**end of header 
+
+@c Isamode.texi,v 2.6 1997/05/27 22:26:53 da Exp
+
+@c merge functions and variables into concept index.
+@syncodeindex fn cp
+@syncodeindex vr cp
+
+@set version 2.7
+@set last-update March 2000
+
+@c Fix up skips - defaults are unaesthetic
+@c Make chapheadingskip much bigger (for chapters starting
+@c on the same page), (sub)secheadingskip smaller.
+@c No paragraph indentation.
+@c Adjustment  bigskipamount to make chapter headings closer to text.
+@tex
+\global\chapheadingskip = 60pt plus 8pt minus 2pt 
+\global\secheadingskip = 12pt plus 3pt minus 2pt
+\global\subsecheadingskip = 9pt plus 2pt minus 2pt
+\global\parindent=0pt
+\global\bigskipamount=1pt plus 0pt minus 3pt
+\global\tableindent=1in
+@end tex
+
+
+@ignore
+@ifinfo
+@format
+START-INFO-DIR-ENTRY
+* Isamode::     For using the theorem prover Isabelle with Emacs.
+END-INFO-DIR-ENTRY
+@end format
+@end ifinfo
+@end ignore
+
+@finalout
+@titlepage
+@title Isamode
+@subtitle Theorem proving with Isabelle inside GNU Emacs
+@subtitle Isamode version @value{version}, for Isabelle99.
+@subtitle @value{last-update}.
+  
+@author David Aspinall 
+@c @code{<da@@dcs.ed.ac.uk>}
+
+@page
+@vskip 0pt plus 1filll
+This manual and the program Isamode are Copyright @copyright{} 1994-2000
+David R. Aspinall and LFCS.
+
+The program Isabelle is Copyright @copyright{} by the University of Cambridge.
+ 
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission notice
+identical to this one except for the removal of this paragraph (this
+paragraph not being relevant to the printed manual).
+@end ignore
+
+@sp 2
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.  
+@sp 2
+
+This manual documents Isamode, Version @value{version}, for use with
+Isabelle99.
+@end titlepage
+@headings double
+
+@c Headings for draft copy
+@c @iftex
+@c @headings off
+@c @everyheading @thischapter @| @emph{Draft} @| @thispage 
+@c @everyfooting @| @| @today{}, 2.6
+@c @end iftex
+
+@page
+
+@ifinfo
+@node top, Introduction, (dir), (dir)
+@top Isamode
+@c @menu
+@c * Introduction::                
+@c * Interacting with Isabelle::   
+@c * Proofstate::                  
+@c * Rule tables::                 
+@c * Listener::                    
+@c * Theory and ML files::         
+@c * Display Customization::       
+@c * Acknowledgements::            
+@c * Obtaining the software::      
+@c * Installing Isamode::          
+@c * Ideas and Dreams::            
+@c * Index::                       
+@c * Copying::                     
+@c @end menu
+
+ 
+This file documents version @value{version} of `Isamode', a
+user-interface and suite of editing functions for using the theorem
+prover Isabelle inside GNU Emacs.  The facilities are implemented mostly
+in Emacs Lisp.
+
+To load from any Emacs session, you need to insert the line:
+
+@lisp
+   (require 'isa-site)
+@end lisp
+
+into your @file{~/.emacs} file.  
+
+You may need to use @code{(load "@var{path}/isa-site")} instead if
+@file{isa-site} is not on the Emacs load-path at your site.
+
+@* Then use the command @kbd{M-x isabelle} to start Isabelle...
+@end ifinfo
+
+@menu
+* Introduction::                
+* Interacting with Isabelle::   
+* Proofstate::                  
+* Rule tables::                 
+* Listener::                    
+* Theory and ML files::         
+* Display Customization::       
+* Acknowledgements::            
+* Obtaining the software::      
+* Installing Isamode::          
+* Ideas and Dreams::            
+* Index::                       
+* Copying::                     
+@end menu
+
+@node Introduction, Interacting with Isabelle, top, top
+@comment  node-name,  next,  previous,  up
+@chapter Using Isabelle with Emacs
+@cindex Isamode
+
+There are several good reasons for using Emacs when you're proving
+theorems with Isabelle.  For example, you can retain a complete history
+of your interaction inside an Emacs buffer, which you can browse or
+search through.  You can use the editing and history mechanism to speed
+up typing commands to Isabelle.  You can conveniently cut and paste in
+the shell buffer, to edit your completed proofs into an ML batch file,
+or issue commands kept in a file.
+
+These things are possible just by running Isabelle inside an Emacs shell
+buffer. @dfn{Isamode} is an Emacs Lisp package which builds on this to
+provide additional Isabelle-specific editing and interaction facilities.
+It goes a small way to softening the harshness of Isabelle's text-only
+user interface; the hope is that it will help make the learning curve
+for new Isabelle users less steep, whilst at the same time speeding up
+use for experienced Isabelle users.
+
+@menu
+* Features of Isamode::         
+* Prerequisites::               
+@end menu
+
+@node Features of Isamode, Prerequisites, Introduction, Introduction
+@unnumberedsec Features of Isamode
+
+@itemize @bullet
+@item 
+An @strong{Isabelle interaction mode} allows you to interact with
+Isabelle in a shell-like buffer.
+
+@item 
+@strong{Menus and keyboard accelerators} issue common tactics and proof
+commands.
+
+@item 
+The @strong{current proof state} is displayed in a separate buffer.
+
+@item 
+@strong{Rule tables} show the rules available in the current logic, for
+building tactics.
+
+@item 
+The @strong{listener}
+records interactive proofs, for ``batchifying'' later.
+
+@item 
+A @strong{theory file mode} provides features for editing @file{.thy}
+theory files.
+@end itemize
+
+The proof state, rule tables and listener are called @dfn{associated
+buffers}, because each is associated with a particular Isabelle
+interaction buffer.  Each of the associated buffers can each appear in a
+separate Emacs frame on the screen.
+
+
+
+@node Prerequisites,  , Features of Isamode, Introduction
+@unnumberedsec Prerequisites
+
+This manual assumes a basic understanding of Isabelle; you should at
+least have read the @emph{Introduction to Isabelle} manual.
+
+To get the most from Isamode, you should understand a little about how
+Emacs lisp packages work, in particular, how to set user options.  Emacs
+is self-documenting, so you can begin from @kbd{C-h} and find out
+everything!  Here are some useful commands:
+
+@table @asis
+@item @kbd{C-h m} 
+@code{describe-mode}
+@item @kbd{C-h b} 
+@code{describe-bindings}
+@item @kbd{C-h f} 
+@code{describe-function}
+@item @kbd{C-h v} 
+@code{describe-variable}
+@item 
+@kbd{M-x edit-options}
+@end table
+
+
+
+
+
+
+
+@c **************************************************************************
+@c **************************************************************************
+
+@node Interacting with Isabelle, Proofstate, Introduction, top
+@comment  node-name,  next,  previous,  up
+@chapter Interacting with Isabelle
+@cindex Interacting with Isabelle
+@cindex comint
+
+Using Isabelle with Isamode, you interact in a shell-like buffer based
+on the Emacs command-interpreter package, @file{comint}.  The same
+package lies behind the shell mode in Emacs.  The @code{comint} package
+has many useful features.  For example, there is a command history ring,
+accessed with the keys @kbd{M-p} (@code{comint-previous-input}) and
+@kbd{M-n} (@code{comint-next-input}).  Another feature is
+context-sensitive completion, used in Isamode for filenames and ML
+identifiers.
+
+You can find out more about @code{comint} by reading the documentation
+in the file @file{comint.el} or, as usual, using @kbd{C-h m}
+(@code{describe-mode}) to show the keys and commands available.  Many of
+the commands are also available on pull-down menus.
+
+The main command to start Isabelle is @kbd{M-x isabelle}.
+
+@deffn Command isabelle
+@cindex Interaction buffer
+Prompt for a logic name, and then create or switch to an Isabelle
+process for the chosen @var{logic}.  The isabelle session takes place in
+an @dfn{interaction buffer}, named @code{*@var{logic}*}.  
+@end deffn
+
+See below for more details about how to select a logic.
+
+@kbd{M-x isabelle} behaves as other similar Emacs commands: if there is
+already a buffer @code{*@var{logic}*}, then @code{isabelle @var{logic}}
+will switch to that buffer (and its associated buffers).  But it is
+perfectly possible to have more than one Isabelle session with the same
+logic --- you simply rename the first buffer.
+
+
+@menu
+* Logic choice::                
+* Startup sequence::            
+* Completion::                  
+* Backslashes in interaction::  
+* Menus::                       
+* Interaction menu operations::  
+@end menu
+
+
+@node Logic choice, Startup sequence, Interacting with Isabelle, Interacting with Isabelle
+@section Choosing which Logic 
+@cindex Choosing which logic
+@cindex Logic
+@cindex User options, logic image path
+
+If you type @code{M-x isabelle} you are prompted for a logic name; you
+may hit @kbd{@key{SPC}} for a list of possibilities.  Alternatively,
+selecting `Session' from the Isabelle menu will also display a sub-menu
+of logic names.  The list shown will contain all the object logics found
+when Isamode was started.  Object logics
+are searched for using the Isabelle tool @code{isatool findlogics}.
+
+If you want to use a newly built logic which isn't in the completion
+list, typing @kbd{C-u M-x isabelle} will run the command @code{isatool
+findlogics} again to update the internal record of object logics
+available.  (Note: this doesn't rebuild the menu at present).
+
+The command @kbd{M-x isabelle} calls the internal function
+@code{isabelle-session}, which may be useful if you wish to write
+special start-up scripts for Emacs to fire-up Isabelle, or define keys
+to switch to a particular logic session.
+
+@deffn {Internal Function} isabelle-session logic 
+Create or switch to an Isabelle process in an interaction buffer
+with the base logic @var{logic}.  The buffer is named
+@code{*@var{logic}*}.
+@end deffn
+
+
+
+
+
+@node Startup sequence, Completion, Logic choice, Interacting with Isabelle
+@section Startup Sequence
+
+@defopt isa-session-prelude
+This variable contains a command silently sent to the process at the
+start of every Isabelle session.  It's useful for setting options inside
+Isabelle (for example, @samp{loadpath}), or loading a personal startup
+file that does such configuration.  
+@end defopt
+
+The default value of @var{isa-session-prelude} is set from the Isabelle
+settings environment, to be the value of the environment variable
+@var{ISAMODE_PRELUDE}.  
+
+An example setting for this is:
+@example
+   ISAMODE_PRELUDE='use "/home/da/isabelle/startup.ML";'
+@end example
+which attempts to read in a file @file{startup.ML} from my Isabelle
+directory.  You might set this variable in the private
+@file{$ISABELLE_HOME_USER/etc/settings} file.
+ 
+@strong{NOTE}: make sure that the string is properly escaped from the
+shell; terminated with a semi-colon and doesn't lead to an error --- you
+won't see the results of executing it!
+
+@c @node Main commands
+@c @section Main commands
+
+
+@c @item {C-c M-l}        
+@c   activate listener
+@c @item {C-c M-p}        
+@c   activate proof-state buffer
+@c @item {C-c M-r}        
+@c   activate a rule table
+@c @item {C-c C-q}        
+@c   quit Isabelle
+
+
+@node Completion, Backslashes in interaction, Startup sequence, Interacting with Isabelle
+@section Completion
+
+
+@deffn Command comint-dynamic-complete 
+ The primary completion command in
+ the Isabelle interaction buffer, usually bound to @key{TAB}.  If the point is
+ inside an ML string, completion will assume you are asking for a
+ filename, otherwise that you are completing some ML identifier.
+@end deffn
+
+@defvr Constant isa-completion-list 
+ This constant contains the table
+ used for ML identifier completion.  Completion is provided for
+ identifiers denoting tactics, tacticals and proof commands.  See the
+ file @file{isa-rules.el}.
+@end defvr
+
+Completion is not implemented for rule names because typically they are
+short, and may be displayed in a rule table anyway (@pxref{Rule tables}).
+
+
+
+@node Backslashes in interaction, Menus, Completion, Interacting with Isabelle
+@section Backslashes
+
+Isabelle uses ML strings to represent types and terms of the meta-logic.
+Terms and types can be very long strings which are easier to read, type
+and edit if they span several lines. ML strings which span lines must
+contain the escape sequence @samp{\ \} to indicate to the ML parser that
+the carriage return is not part of the string and that the string will
+be continued on the next line.
+
+When you are inputting such strings it is annoying to need to remember
+to include these backslashes.  So Isamode makes the job easy for you by
+doing it automatically, both in interaction buffers, and inside
+@file{.thy} files (@pxref{Theory files}).
+
+If you type @key{RET} at the end of a line which contains an unclosed
+string, Isamode will insert a backslash (if you haven't done already)
+before sending it to the ML process.  Another backslash will be inserted
+on the following line.
+
+@c Isamode is quite intelligent about the syntax for ML strings, but things
+@c will get confused if @emph{you} make a mistake and there is a
+@c discrepancy between Isamode and the ML interpreter over whether you
+@c are inside a string or not!  (In this case, just keep typing @samp{;}
+@c and @samp{"} until things fix themselves).
+
+If you don't like this behaviour, here is a way to disable it:
+
+@lisp
+        (add-hook 'isa-mode-hook
+           (function (lambda ()
+                      (define-key isa-mode-map "\C-m"
+                                  'comint-send-input))))
+@end lisp
+
+@key{RET} is normally bound to the function @code{isa-send-input}.
+
+@deffn {Internal function} isa-send-input
+A function which does automatic backslashing before and after invoking
+@code{comint-send-input}.
+@end deffn
+
+
+
+@node Menus, Interaction menu operations, Backslashes in interaction, Interacting with Isabelle
+@comment  node-name,  next,  previous,  up
+@section Menus
+
+Isamode provides a main menu, called @samp{Isabelle}, which appears by
+default in Isabelle interaction buffers and theory file buffers.  After loading
+Isamode, it will also appear in ML buffers, if you use @code{sml-mode}
+(@pxref{ML files}).  To add the main menu to the menubar of the current
+buffer in other cases, there is a command, @kbd{M-x isa-menus}.
+
+@deffn Command isa-menus
+Add main @samp{Isabelle} menu to current menubar.
+@end deffn
+
+The main menu has options for starting Isabelle sessions, displaying
+documentation, or engaging various editing functions (see @ref{Theory
+and ML files}).  In addition to the @samp{Isabelle} menu, there are four
+menus provided for interaction mode.
+
+@table @samp
+@item Option 
+ allows you to activate or switch to buffers associated with
+ this one, or adjust various Isabelle parameters.  There is a quit
+ option here.
+@item Goal
+@itemx Prover
+@itemx Tactic
+ are menus providing short-cuts for typing frequently used Isabelle
+commands.  Each item in these menus inserts text into the Isabelle
+buffer.  Most have key bindings too, so you can save many keystrokes.
+@end table
+
+The convention for the Isabelle command key sequences is:
+
+@table @kbd
+@item C-c C-t @var{key}  
+  for tactics@dots{}
+@item C-c C-r @var{key}  
+  for rewriting tactics@dots{}
+@item C-c C-p @var{key}  
+  for prover tactics@dots{}
+@item C-c C-s @var{key}  
+  for goal commands@dots{} (remember goal `s'tack or
+  `s'tart proof)
+@end table
+
+The commands are shown in full in 
+@iftex
+the following section
+@end iftex
+@ifinfo
+@ref{Interaction menu operations}.
+@end ifinfo
+
+
+@node Interaction menu operations,  , Menus, Interacting with Isabelle
+@section Interaction mode menu operations
+@cindex Interaction menu operations
+
+
+Here's a list of the Isamode interaction buffer commands in the
+@samp{Goal}, @samp{Prover} and @samp{Tactic} menus.  We show the text
+they insert, and the keystrokes bound to the commands by default.  In
+the table, @var{d} stands for the designated subgoal (@pxref{Proofstate
+commands} --- don't forget @kbd{C-@key{up}} and @kbd{C-@key{down}}).
+@var{rules}, @var{thmname}, etc, stand for some data that must be typed
+to complete the command.  If there is no data needed, the text may be
+sent immediately to Isabelle; otherwise you should type something
+followed by @key{RET}.
+
+@c  ****************************************************************
+@c   Command table
+@c  ****************************************************************
+@c
+@c allow space for whole function name on same line
+@tex
+\global\tableindent=2in
+@end tex
+@subsubheading Primary Tactics
+@iftex
+@table @asis
+@item Emacs command
+Inserted text
+@tex 
+\hfill 
+@end tex 
+Key 
+@end table
+@end iftex
+@ftable @code
+@item isa-resolve_tac
+@code{by (resolve_tac [@var{rules}] @var{d});}
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-r} 
+
+@item isa-resolve_tac-prems 
+@code{by (resolve_tac prems @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-p}    
+
+@item isa-assume_tac
+@code{by (assume_tac @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-a}    
+
+@item isa-eresolve_tac 
+@code{by (eresolve_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-e}    
+
+@item isa-dresolve_tac 
+@code{by (dresolve_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-d}    
+
+@item isa-forward_tac
+@code{by (forward_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t C-f}    
+
+@item isa-match_tac 
+@code{by (match_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t r}    
+
+@item isa-match_tac-prems
+@code{by (match_tac prems @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t p}    
+
+@item isa-eq_assume_tac 
+@code{by (eq_assume_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t a}    
+
+@item isa-ematch_tac 
+@code{by (ematch_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t e}    
+
+@item isa-dmatch_tac 
+@code{by (dmatch_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-t d}    
+@end ftable
+
+@subsubheading Rewriting Tactics
+@c @iftex
+@c @table @asis
+@c @item Emacs command
+@c Inserted text
+@c @tex 
+@c \hfill 
+@c @end tex 
+@c Key
+@c @end table
+@c @end iftex
+
+@ftable @code
+@item isa-rewrite_goals_tac 
+@code{by (rewrite_goals_tac [@var{rules}]);}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-r g}    
+
+@item isa-rewrite_tac 
+@code{by (rewrite_tac [@var{rules}]);}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-r w}    
+
+@item isa-fold_goals_tac 
+@code{by (fold_goals_tac [@var{rules}]);}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-r f}    
+
+@item isa-cut_facts_tac 
+@code{by (cut_facts_tac [@var{rules}] @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-r c}    
+
+@item isa-cut_facts_tac-prems
+@code{by (cut_facts_tac prems @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-r p}    
+@end ftable
+
+@subsubheading Prover Tactics
+@c @iftex
+@c @table @asis
+@c @item Emacs command
+@c Inserted text
+@c @tex 
+@c \hfill 
+@c @end tex 
+@c Key 
+@c @end table
+@c @end iftex
+
+@ftable @code
+@item isa-simp_tac
+@code{by (simp_tac @var{simpset}_ss @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p C-s}  
+
+@item isa-asm_simp_tac
+@code{by (asm_simp_tac @var{simpset}_ss @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p C-a}  
+
+@item isa-asm_full_simp_tac
+@code{by (asm_full_simp_tac @var{simpset}_ss @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p C-f}  
+
+@item isa-fast_tac
+@code{by (fast_tac @var{claset}_cs @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p f}
+
+@item isa-best_tac
+@code{by (best_tac @var{claset}_cs @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p b}    
+
+@item isa-step_tac
+@code{by (step_tac @var{claset}_cs @var{d});}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-p s}
+
+@item isa-contr_tac
+@code{by (contr_tac @var{d});}
+@tex
+\hfill
+@end tex
+
+@item isa-mp_tac
+@code{by (mp_tac @var{d});}
+@tex
+\hfill
+@end tex
+
+@item isa-eq_mp_tac
+@code{by (eq_mp_tac @var{d});}
+@tex
+\hfill
+@end tex
+@end ftable
+
+@subheading Goal Commands
+@c @iftex
+@c @table @asis
+@c @item Emacs command
+@c Inserted text
+@c @tex 
+@c \hfill 
+@c @end tex 
+@c Key
+@c @end table
+@c @end iftex
+
+@ftable @code
+@item isa-undo
+@code{undo();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s u}
+@item isa-back
+@code{back();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s b}
+@item isa-chop
+@code{chop();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s c}
+@item isa-choplev
+@code{choplev @var{lev};}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+(unbound)
+@end ifinfo
+@item isa-goal-thy
+@code{val prems = goal thy "@var{goal}";}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s g}
+@item isa-goalw-thy
+@code{val prems = goalw thy @var{rewrites} "@var{goal}";}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s w}
+@item isa-result
+@code{val @var{thmname} = result();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s r}
+@item isa-push-proof
+@code{push_proof();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s p}
+@item isa-pop-proof
+@code{val prems = pop_proof();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s o}
+@item isa-rotate-proofs
+@code{val prems = rotate_proof();}
+@tex
+\hfill
+@end tex
+@ifinfo
+@*
+key: 
+@end ifinfo
+@kbd{C-c C-s n}
+@end ftable
+@c reset tableindent to its old value
+@tex
+\global\tableindent=1in
+@end tex
+@c  ****************************************************************
+@c   End of command table
+@c  ****************************************************************
+
+
+
+
+@c **************************************************************************
+@c **************************************************************************
+
+@node Proofstate, Rule tables, Interacting with Isabelle, top
+@comment  node-name,  next,  previous,  up
+@chapter Proof state
+@cindex Proof state buffer
+@cindex Subgoal list
+
+The @emph{proof state buffer} maintains a display of the current proof
+state (goal and subgoal list) during interactive proof.  Usually this
+would appear interspersed with user input on the terminal --- one of the
+major benefits of using Isamode is that it separates this output and
+keeps the machine dialogue uncluttered.
+
+Internally, this is implemented by setting up a process-filter which
+watches output from the Isabelle process, waiting for character
+sequences that look like displays of the proof state, as for example,
+when you type @code{pr();}.  If a proof state buffer is active, these
+sequences will be stripped from the output and used to update the
+buffers contents.
+
+@deffn Command proofstate 
+ Start or display a proof state buffer
+ associated with the current Isabelle interaction buffer.  At most one
+ proof state buffer can be associated with a given Isabelle interaction buffer.
+ This command gives an error if the current buffer is not an Isabelle
+ buffer.
+@end deffn
+
+@kbd{M-x proofstate} is usually bound to @kbd{C-c M-p}, which is useful
+in single frame mode (@pxref{Display options I}) because it provides a
+quick way of switching buffers in another window to show the proofstate
+display.
+
+@menu
+* Proofstate commands::         
+* Large Proof states::          
+@end menu
+
+
+@node Proofstate commands, Large Proof states, Proofstate, Proofstate
+@section Proofstate Commands 
+
+@cindex Designated subgoal
+In the proof state buffer, the cursor usually appears opposite one of
+the subgoals in the list (if there are any).  This subgoal is called the
+@dfn{designated subgoal}; it can be selected using the cursor keys
+@key{up} and @key{down}, or from the interaction buffer, with
+@kbd{C-@key{up}} and @kbd{C-@key{down}}.  
+
+The designated subgoal is the one you wish to prove; it is the subgoal
+that will be used by default by the tactic insertion commands in the
+interaction buffer (@xref{Interaction menu operations}) or in a rule table
+(@pxref{Ruletable commands})
+
+@cindex Proof levels
+Other useful keys in the proofstate buffer are @key{LEFT}
+(@code{proofstate-previous-level}) and @key{RIGHT}
+(@code{proofstate-next-level}), which page back and forward through
+levels of the proof.  To go directly to a specific level, type the level
+as a prefix argument (e.g., @kbd{M-2 M-7} for level 27), and hit
+@key{SPC} (@code{proofstate-refresh}).  Without an argument,
+@code{proofstate-refresh} returns to the latest level.
+
+If you resize the proofstate window, it is useful to set Isabelle's
+pretty printer margin appropriately.  This is done by pressing @key{RET}
+(@code{proofstate-resize-and-refresh}).
+
+
+@node Large Proof states,  , Proofstate commands, Proofstate
+@section A note about large proof states
+@cindex Large proof states
+
+You may discover that very large proof states sometimes fail to parse
+and end up in the Isabelle buffer, instead of the proof state buffer.
+
+The reason for this is that the Emacs code filters all the output from
+the Isabelle process so that proof states can be stripped out.  This is
+done by matching on text between ML prompts; text up to the next prompt
+is put into a hidden output buffer before matching.  Unfortunately, this
+has a bad interaction with @code{use} and @code{use_thy}, because
+@code{use} may produce a lot of output (perhaps slowly) before the next
+prompt appears, and it is very strange not to see any output before
+@code{use} has finished.
+
+So if the output gets larger than a certain threshold, Isamode assumes
+that it is from @code{use} (or something similar), and won't contain a
+proof state.  The variable that controls this threshold is
+@code{isa-text-spill-size}, which defaults to @code{2000}.  If you
+notice large proof states spilling into the Isabelle buffer, one
+solution is to reduce the goals limit; another is to 
+set this variable higher by, for example:
+
+@lisp
+    (setq isa-text-spill-size 5000)
+@end lisp
+
+in your @file{.emacs}.  But remember that there will be a bigger delay
+with @code{use}.
+
+The present output filtering technique is unsatisfactory and may be
+changed in the future when improved mechanisms of communication between
+Isabelle and Emacs are possible.
+
+
+
+
+
+
+@c **************************************************************************
+@c **************************************************************************
+
+@node Rule tables, Listener, Proofstate, top
+@comment  node-name,  next,  previous,  up
+@chapter Rule tables
+@cindex Rule tables
+
+A @emph{rule table buffer} displays a formatted table of ML identifiers,
+typically including rule names, simplifier sets, classical rule sets and
+tactics.  You can use the table for reference purposes, or actively:
+there are commands to copy the names into the interaction buffer, to
+build tactics based on the names, or to display the rule.
+
+Isamode comes supplied with basic rule tables for the standard object
+logics.  You can easily extend these to add your favourite rules and
+tactics, or create new rule tables for your own theories, by writing
+@file{.rules} files. 
+
+The command to show a rule table is @code{M-x ruletable}, normally
+bound to the key @kbd{C-c M-l} (which is useful in single frame mode).
+
+@deffn Command ruletable 
+Prompt for a ruletable to display.
+This command gives an error if the current buffer is not an Isabelle
+buffer.
+@end deffn
+
+Rule table files are searched for in directories in the list
+@code{isa-ruletable-paths}.
+
+@defopt isa-ruletable-paths
+This variable is a list of directory names which are used to store rule
+table @file{.rules} files.
+
+The default value is found using the @code{isatool} program; either it
+is set from @var{ISAMODE_RULETABLE_PATH}, if that variable set, or
+it is set to be the single directory @var{ISAMODE_HOME/ruletables}.
+You should set @var{ISAMODE_RULETABLE_PATH} to be a colon-separated
+sequence of paths, as usual for Unix path variables.
+@end defopt
+
+Just as for object logics, Isamode keeps an internal record of the rule
+tables available and their file names.  If you type @kbd{C-u M-x
+ruletable}, this internal record will be re-built.
+
+There may be any number of rule table buffers associated with a single
+Isabelle interaction buffer. When running under a window system, the
+first 3 (by default) will receive their own windows.  The modeline at
+the bottom of rule table buffer displays both the name of the logic it
+is associated with, and the name of the theory for which it is a table.
+
+@menu
+* Ruletable commands::          
+* Creating rule tables::        
+* Rule Categories::             
+* Rule table internals::        
+@end menu
+
+@node Ruletable commands, Creating rule tables, Rule tables, Rule tables
+@section Ruletable Commands 
+@cindex Ruletable commands
+
+The cursor keys are used to move amongst the rule names, or you can use
+the mouse to highlight a rule name.  Hitting @kbd{SPC} or pressing the
+left mouse button, @kbd{button-1}, will insert the rule name into the
+interaction buffer, possibly preceded by a comma.  This allows you to
+quickly construct lists of rules.
+
+The middle mouse button, @kbd{button-2}, can be used to execute a tactic:
+
+@table @kbd
+@item S-button-2
+  executes @code{by (rtac @var{rule} @var{d});}
+@item C-button-2
+  executes @code{by (dtac @var{rule} @var{d});}
+@item M-button-2
+  executes @code{by (etac @var{rule} @var{d});}
+@item button-2
+  executes a tactic based on the name of the rule.@*
+  How the tactic is chosen is described in @ref{Rule Categories}.
+@end table
+where @var{d} is the designated subgoal (@pxref{Proofstate commands}).
+
+Pressing @key{RET} or the right mouse button, @kbd{button-3}, displays
+the rule in a temporary buffer using @code{prth} --- hit @key{q}
+immediately afterward to remove it.  If the name denotes something other
+than a rule, it may be displayed correctly if what it denotes can be
+guessed from its name, @xref{Rule Categories}.  Otherwise, you may just
+see a type error!
+
+The key @kbd{TAB} toggles the display mode of the table. The display can
+be in @emph{short form}, where descriptive headings for rule tables are
+not displayed and lines are concatenated (this is useful for single
+frame mode), or @emph{long form}, where all headings and grouping is
+shown.  @kbd{TAB} also reformats the table, so it is useful if you
+re-size the Emacs window.
+
+
+@node Creating rule tables, Rule Categories, Ruletable commands, Rule tables
+@section Creating Rule tables
+@cindex Creating rule tables
+
+When you write your own theories and logics, you may want to extend or
+create rule tables.  This is very easy to do.  Choose a name for your
+rule table (typically, the name of the theory or logic it documents),
+and create a text file @file{@var{name}.rules}.
+
+The text file should consist of @emph{headings} and
+@emph{identifiers}.  Here's a fragment of @file{FOL.rules}:
+
+@example
+Equality
+ refl  sym  trans  subst  ssubst 
+Propositions
+ conjI  conjunct1  conjunct2  conjE  
+ disjI1  disjI2  disjE  
+ impI  mp  impE  
+Quantifiers
+ allI  spec  allE  all_dupE  
+@end example
+
+Headings begin at the start of a line and should not contain whitespace;
+nothing should follow a heading.  Identifiers should be valid ML
+identifiers, and be separated by tabs or spaces.  A line of identifiers
+begins with some whitespace.
+
+When the rule table file is loaded by Isamode, it is parsed and stored
+internally; the headings and position of line breaks are recorded.  This
+allows rule tables to be shown in both long and short form: the short
+form just breaks the line at headings, and concatenates lines of
+identifiers between headings.  More details of the internal format of
+rule tables are in @ref{Rule table internals}.
+
+@c If you edit a rule table file and want it to be re-loaded, type in the
+@c full file name (with @file{.rules}), instead of the theory name.
+
+At present there is no mechanism for automatic generation of rule
+tables.  In the future there should be ways of building tables using the
+theorem database, although it will still be useful to design and edit
+tables by hand, because of the ability to add headings and comment text
+in the tables; presently Isabelle's theorem database is too primitive to
+provide useful meta-comments about theorems.
+
+
+
+@node Rule Categories, Rule table internals, Creating rule tables, Rule tables
+@section Rule Categories
+@cindex Rule categories
+@cindex ML identifiers
+
+Rule tables are not limited to containing rule names, they may display
+any ML identifier.  Rules (ML type @code{thm}), tactics (ML type
+@code{tactic} or @code{int->tactic}), rule sets
+(@code{simpset},@code{claset}) are all candidates.  The more
+logic-dependent names that are shown in a rule table, the less a user
+has to remember or refer to documentation for.
+
+We can also take the opportunity to make use of all these
+logic-dependent things.  One use is by building appropriate tactics
+automatically inside Emacs to apply during proof: typically with
+something of type @code{claset} one might use @code{fast_tac}, or
+@code{simp_tac} with a @code{simpset}, etc.  For rules, we'd like to
+distinguish between introduction rules (to use @code{resolve_tac}) and
+elimination rules (to use @code{eresolve_tac}), for example.
+
+Isamode does some `automatic tactic building' from the rule table, but
+it isn't very flexible as yet.  Clicking with the middle mouse key on a
+name in a rule table executes a command which guesses which tactic to
+apply based on the name.  In XEmacs, this default tactic is displayed
+when you move the pointer over the rule.
+
+Emacs decides what kind of entity something in a rule table is, and then
+which tactic to apply, by pattern matching on its name.  This works most
+of the time, as many identifiers used in Isabelle follow a regular
+naming convention.
+
+@menu
+* Naming convention table::     
+* Naming convention example::   
+@end menu
+
+@cindex Naming conventions
+@node Naming convention table, Naming convention example, Rule Categories, Rule Categories
+@ifinfo
+@unnumberedsubsec Naming convention table
+@end ifinfo
+
+Here are the categories of identifier that you might want to include in
+ruletables, together with the patterns used to distinguish them and the
+default tactics they trigger.
+
+@var{n} stands for a digit @code{0}-@code{9}, @var{d} for a subgoal
+number, and @var{rl} for some characters in a rule name.
+
+@page
+@tex
+\global\tableindent=2in
+@end tex
+@iftex
+@table @asis
+@item Pattern 
+Category
+@tex 
+\hfill 
+@end tex 
+Default tactic
+@end table
+@end iftex
+@table @code
+@item @var{rl}I @r{or} @var{rl}I@var{n}
+@cindex Introduction rule
+@cindex Rule, introduction
+@dfn{Introduction rule}
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{rtac @var{rl} @var{d}}
+@item @var{rl}E @r{or} @var{rl}E@var{n}
+@cindex Elimination rule
+@cindex Rule, elimination
+@dfn{Elimination rule}
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{etac @var{rl} @var{d}}
+@item @var{rl}D @r{or} @var{rl}D@var{n}
+@cindex Destruction rule
+@cindex Rule, destruction
+@dfn{Destruction rule}
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{dtac @var{rl} @var{d}}
+@item 
+@dfn{Arbitrary rule}
+@cindex Arbitrary rule
+@cindex Rule, arbitrary
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{rtac @var{rl} @var{d}}
+@item @var{rl}_def 
+@dfn{Definition}
+@cindex Definition
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{rewrite_goals_tac [@var{rl}]}
+@item @var{rl}_rls 
+@dfn{Rule set}
+@cindex Rule set
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{resolve_tac @var{rl} @var{d}}
+@item @var{rl}_ss 
+@dfn{Simplifier rule set}
+@cindex Simplifier rule set
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{asm_full_simp_tac @var{rl} @var{d}}
+@item @var{rl}_cs 
+@dfn{Classical rule set}
+@cindex Classical rule set
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{fast_tac @var{rl} @var{d}}
+@item @var{rl}_tac
+@dfn{Indexed Tactic}
+@cindex Indexed tactic
+@cindex Tactic, indexed
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{@var{rl} @var{d}}
+@item
+@dfn{Tactic}
+@cindex Tactic
+@tex 
+\hfill 
+@end tex 
+@ifinfo
+@*
+@end ifinfo
+@code{@var{rl}}
+@end table
+
+@node Naming convention example,  , Naming convention table, Rule Categories
+@ifinfo
+@unnumberedsubsec Naming convention example
+@end ifinfo
+
+For example, @code{iffD2} will be recognised as a destruction rule,
+whereas @code{iffI} will be recognised as an introduction rule.  A name
+such as @code{trans} that matches none of the patterns given is assumed
+to be an `Arbitrary rule' to be used with @code{resolve_tac}.  Often
+this isn't what you want; the heuristic is maybe correct for about
+70% of the identifiers used in the built-in object logics.  It's a good
+idea to follow the convention for your own logics.
+
+See 
+@ifinfo
+@ref{Rule table categories}
+@end ifinfo
+@iftex
+@ref{Ideas and Dreams}
+@end iftex
+for some discussion on future improvements to these features.
+
+
+
+
+@node Rule table internals,  , Rule Categories, Rule tables
+@comment  node-name,  next,  previous,  up
+@section Rule table internals 
+
+This final section is for lisp hackers only, who may wish to manipulate
+rule tables at the lisp level (for example, to automatically generate
+them from @file{.thy} files).
+
+The ruletable data is held in the variable @code{isa-theory-rules}.  The
+functions @code{isa-add-theory-rules} and
+@code{isa-add-theory-rulegroup} may be called to extend the ruletable
+variable.
+
+@menu
+* Rule table format::           
+* Rule table extension functions::  
+@end menu
+
+
+@node Rule table format, Rule table extension functions, Rule table internals, Rule table internals
+@ifinfo
+@subheading Rule table format
+@end ifinfo
+@cindex Rule tables, format
+
+@defvr Constant isa-theory-rules
+Table of logics and rule names for rule-table buffers.
+
+A list of lists, one per theory or logic, like this:
+
+@lisp
+   ((@var{theory-name} @var{rulegroup} @var{rulegroup} @dots{})
+                    @dots{}
+                    @dots{}                   )
+@end lisp
+
+where @var{theory-name} is a string.  Each @var{rulegroup} has the form:
+
+@lisp
+   (@var{rulegroup-name} . [@var{rule} @var{rule} @dots{}])
+@end lisp
+
+here @var{rulegroup-name} is a string that must contain a single word.
+Each @var{rule} is either a string of a single word, or @code{nil}; the
+latter represents a further (unnamed) subgrouping of the rules in the
+table, and will cause a line-break in the table.
+
+An alternative form for a theory entry is:
+
+@lisp
+   (@var{theory-name} . @var{rules-filename})
+@end lisp
+
+Where @var{rules-filename} is a full filename for a @file{.rules} file
+which contains the ruletable for @var{theory-name}.
+@end defvr
+
+@node Rule table extension functions,  , Rule table format, Rule table internals
+@ifinfo
+@subheading Rule table extension functions
+@end ifinfo
+@cindex Rule tables, making
+
+@deffn Function isa-add-theory-rules rule-list
+Add or overwrite a rule table for a theory held in
+@code{isa-theory-rules}.
+@c   @var{rule-list} has the form
+@c @lisp
+@c    ((@var{theory-name} @var{rulegroup} @var{rulegroup} @dots{}.)
+@c     @dots{}
+@c    )
+@c @end lisp
+@c as explained above.
+@end deffn
+
+@deffn Function isa-add-theory-rulegroup theory-name rulegroup
+Add or overwrite a @var{rulegroup} for a theory in
+@code{isa-theory-rules}.
+@end deffn
+
+
+
+
+
+
+
+@c **************************************************************************
+@c **************************************************************************
+
+@node Listener, Theory and ML files, Rule tables, top
+@chapter Listening (and talking)
+@cindex Listener buffer
+
+A @emph{listener buffer} receives a verbatim copy of every command that
+is issued to an Isabelle session.  It is useful for recording
+interactive proofs: you can cut and paste lines into an ML file to store
+proofs.  Listener buffers can now also talk: you can type commands
+directly into them, and send lines to the Isabelle session.  This makes
+it easy to create proof scripts.
+
+@c Future versions of Isamode may provide more advanced ways of using a
+@c `listener'-like buffer, so that, for example, @code{undo()} commands are
+@c interpreted and delete lines.  Presently @code{undo()} lines are copied
+@c like any other.
+
+The command to create a listener buffer is @kbd{M-x listener}.  It is
+usually bound to @kbd{C-c M-l}, which is useful in single frame mode,
+or to clear the listener buffer when you start a fresh proof.
+
+@deffn Command listener
+Start a new listener buffer associated with the current Isabelle
+interaction buffer.  This gives an error if the current buffer is not an
+Isabelle interaction buffer.
+@end deffn
+
+In fact, it is possible for any buffer to be treated as a listener, and
+you can easily turn listening on and off.  This makes it easy to write
+proof scripts directly into @file{.ML} files.
+
+@deffn Command listener-minor-mode
+Toggle listening for the current buffer. 
+@end deffn
+
+@menu
+* Listener commands::           
+@end menu
+
+
+@node Listener commands,  , Listener, Listener
+@section Listener Commands 
+@cindex Listener commands
+
+The listener minor mode provides functions useful for editing proof
+scripts; you can mix and match typing in the buffer that "listens" with
+typing in and using menus from the Isabelle process buffer.
+
+You can send command lines from a listener buffer to the associated
+Isabelle process using @kbd{C-c C-l} or @kbd{C-c C-n} (which runs
+@code{listener-use-line}).  This copies text from the start of the line,
+up to the next semi-colon that isn't enclosed in a string or
+comment. See @ref{ML files} for further details of a similar command in
+ML buffers.
+
+Another way of sending lines to the Isabelle process is by pasting them
+into a listener buffer with @kbd{C-c C-y}
+(@code{listener-yank-and-use}), instead of just @kbd{C-y}.  This is like
+yanking the text, going to the beginning of the line, and using @kbd{C-c
+C-n}.
+
+You can send an ``undo'' command to the Isabelle process with @kbd{C-c
+C-u} or @kbd{C-c C-p} (@code{listener-use-line}).  After sending the
+undo, this attempts to move backwards to the previous interactive
+command.
+
+The movement functions alone are available with @kbd{C-c C-f}
+(@code{isa-forward-interactive-line}) and @kbd{C-c C-b}
+(@code{isa-backward-interactive-line}).
+
+Two other commands useful inside the listener are @code{isa-batchify}
+and @code{isa-unbatchify}, which let you very easily create batch proofs
+from interactive ones and vise-versa.  See @ref{Batchifying proofs}.
+This makes dedicated listener buffers most useful for playing back
+batched forms of interactive proofs.  For example, you could copy a
+batch proof from a file into the listener, unbatchify it, and then watch
+it replay step by step using @kbd{C-c C-n}.
+
+
+
+@c **************************************************************************
+@c **************************************************************************
+
+@node Theory and ML files, Display Customization, Listener, top
+@comment  node-name,  next,  previous,  up
+@chapter Theory and ML files
+
+As well as providing facilities for interacting with Isabelle, Isamode
+has an in-built mode for editing Isabelle's @file{.thy} files.  This
+mode understands the syntax for ML strings (and will insert and correct
+backslashes) and allows convenient switching to @code{sml-mode} in the
+"ML" section of theory files.  It provides templates to help remind you
+of the syntax for theory files.
+
+@deffn Command isa-thy-mode 
+ Switch the current buffer to the major mode @samp{Theory Mode}.  This
+ command will normally be issued automatically via
+ @code{auto-mode-alist}.
+@end deffn
+
+@menu
+* Theory files::                
+* ML files::                    
+* Batchifying proofs::          
+* Theory mode User Options::    
+* Fontification of Theory Files::  
+@end menu
+
+
+
+@node    Theory files, ML files, Theory and ML files, Theory and ML files
+@section Editing theory files
+@cindex  Editing theory files
+@cindex  Theory files
+
+The theory mode understands the sections in theory files and provides
+several commands to use them.  @kbd{C-c C-n}
+(@code{isa-thy-goto-next-section}) moves to the next section, @kbd{C-c
+C-p} (@code{isa-thy-goto-previous-section}) moves to the previous
+section.  You can also use @key{CTRL} with the up and down arrow keys
+for this.
+
+@kbd{C-c C-t} (@code{isa-thy-insert-template}) provides a template for
+the file or current section.  This is useful if you can't remember the
+syntax for theory files; you will be asked for text.  The templates do
+not cover all the possible variations for theory files and should be
+considered merely as prompts for each section: you are advised to read
+the Isabelle Reference Manual to understand the full situation.
+
+@kbd{C-c C-u} (@code{isa-thy-use-buffer}) sends the buffer to an
+Isabelle process with @code{use_thy} (remember that this may trigger the
+Isabelle theory reading mechanism to load other files).  This is the
+same key that is used by @code{sml-mode}.
+
+The interaction buffer chosen (or created) by @kbd{C-c C-u} is determined
+by parsing the file.  For reliable results, you should include a special
+comment towards the start of the file, which has the form:
+@cindex  @code{Logic Image} comment
+@example
+  Logic Image: @var{logic-name}
+@end example
+Then the use functions will send text to the buffer that would be
+selected by @kbd{M-x isabelle @key{RET} @var{logic-name} @key{RET}}.
+
+The @key{TAB} key indents the current line.  Indentation includes the
+automatic insertion of backslashes in strings that span more than one
+line.  This is handy because axioms are ML strings which are often long,
+and it is tedious to have to remember to put backslashes in the correct
+places (see the discussion in @ref{Backslashes in interaction}).
+
+The key @key{RET} is by default bound to @code{newline-and-indent} so
+that backslashes are inserted automatically when you type @key{RET} at
+the end of a line containing an open string. See @ref{Theory mode User
+Options} for details of how to control the backslashing and indentation
+behaviour.
+
+@kbd{C-k} is bound to @code{isa-thy-kill-line} which behaves in the same
+way as the usual @code{kill-line}, except there is some attempt to
+interpret continuation backslashes inside strings.  For example,
+@kbd{C-k} in the middle of a line which is continued will only delete up
+to the terminating backslash, not the end of line; @kbd{C-k} anywhere
+after the final non-whitespace character on the line will delete
+continuation backslashes when joining lines.  
+
+If you find the automatic treatment of backslashes distracting and would
+rather deal with them manually, you can revert to the usual key bindings
+by putting this code in your @file{.emacs}:
+
+@lisp
+        (add-hook 'isa-thy-mode-hook
+           (function (lambda ()
+                      (define-key isa-thy-mode-map "\C-k"
+                                  'kill-line)
+                      (define-key isa-thy-mode-map "\C-m"
+                                  'newline))))
+@end lisp
+                
+If @code{isa-thy-use-sml-mode} is non-@code{nil}, @kbd{C-c C-c} invokes
+@code{sml-mode} as a minor mode in the ML section.  This is done
+automatically by @code{TAB}.
+
+@kbd{C-c C-o} finds and switches to the associated ML file, that is, the
+file with the same base name but extension @file{.ML} in place of
+@file{.thy}.
+
+
+@c @menu
+@c * Theory mode summary::
+@c @end menu
+
+@c @node Theory mode summary,  , Theory files, Theory files
+@c @subheading{Theory mode command summary}
+
+@deffn Command isa-thy-insert-template
+Insert an entry for the current section in a @file{.thy} file.
+@end deffn
+
+@deffn Command isa-thy-use-buffer
+Send the buffer to an Isabelle process with @code{use_thy}.  The choice
+of Isabelle interaction buffer can be influenced with a special @samp{Logic Image:}
+comment.
+@end deffn
+
+@deffn Command isa-thy-find-other-file
+Find the associated ML or theory file.  This is the file with the same
+base name but extension @file{.ML} in place of @file{.thy}.
+@end deffn
+
+
+@node    ML files, Batchifying proofs, Theory files, Theory and ML files
+@section Editing ML files
+@cindex  Editing ML files
+@cindex  ML
+@cindex  ML mode (@code{sml-mode})
+@cindex  Associated files
+@findex  sml-mode
+
+Theory files may have associated ML files, typically containing proofs
+of some basic consequences of a theory's axioms.  Further ML files may
+be used with Isabelle, containing big proofs, proof procedures, and so
+on.  Isamode is intended to be used in conjunction with the Emacs mode
+for editing ML files, which is called @code{sml-mode}.  
+
+If you visit a theory file before an ML file, @code{sml-mode} will be
+customized to work with Isamode.
+
+You can use @kbd{C-c C-o} (@code{isa-thy-find-other-file}) to visit the
+theory file corresponding to an ML file --- the opposite operation to
+@kbd{C-c C-o} in theory mode.
+
+Uses of @kbd{C-c C-u} (@code{isa-thy-use-buffer}), @kbd{C-c C-r}
+(@code{isa-thy-use-region}), @kbd{C-c C-l} (@code{isa-thy-use-line})
+will send the buffer, region or line to an Isabelle interaction buffer.
+The first two of these keys normally send text to an ML process buffer.
+The logic chosen can be directed in the same way as for theory files,
+i.e., with a @code{Logic Image:} comment towards the start of the file
+@pxref{Theory files}.
+
+@code{isa-thy-use-line} is intended for copying lines of interactive
+proofs, to replay them.  A line is understood to be the text starting on
+current line and extending to the next semi-colon (thus it may span more
+than one buffer line).  Semi-colons inside strings and comments are
+ignored.
+
+
+@deffn Command isa-thy-use-region
+Send the region to an Isabelle process with @code{use}.  The choice of
+Isabelle interaction buffer can be influenced with a special @samp{Logic Image:}
+comment.
+@end deffn
+
+@deffn Command isa-thy-use-line
+Send the current line (delimited by semi-colons or blank lines) to an
+Isabelle process with @code{use}.  The choice of Isabelle interaction buffer can be
+influenced with a special @samp{Logic Image:} comment.
+@end deffn
+
+@c is this worth it?
+@c do we have any choice in Isabelle?
+@defopt isa-ml-file-extension
+The file name extension to use for ML files; the default is @file{.ML}
+which is used in the Isabelle distribution.
+@end defopt
+
+
+@node Batchifying proofs, Theory mode User Options, ML files, Theory and ML files
+@section Interactive and Batch Proofs
+
+Isabelle has two forms of proof script which may be kept in ML files.
+These are @dfn{interactive proofs}, which begin with @code{goal}, and
+@dfn{batch proofs}, which begin with @code{prove_goal}.  Interactive
+proofs update the proof state at each step, when a tactic is applied
+using @samp{by}.  Batch proofs involve no state; they execute in a single
+step without output and can be stored in ML structures.  Batch proofs
+might be considered as a `final' form for debugged proofs; lemmas in
+many of the distributed object logics are proved with batch proofs.
+
+Isamode has functions to help you convert between interactive and batch
+proofs.  @code{isa-batchify} creates a batch proof from an interactive
+one and @code{isa-unbatchify} goes the other way.  The original versions
+of these functions were supplied in an emacs file distributed with Isabelle
+called @file{goalify.el}, which is superseded by Isamode.
+@cindex @file{goalify.el} file
+
+@noindent
+Here is an example of an interactive proof:
+
+@example
+    val prems = goal FOL.thy "P & Q --> P";
+    by (resolve_tac [impI] 1);
+    by (eresolve_tac [conjE] 1);
+    by (assume_tac 1);
+    qed "easy_theorem";
+@end example
+
+@noindent
+and here is a corresponding batch proof:
+
+@example
+    qed_goal "easy_theorem"  FOL.thy "P & Q --> P"
+     (fn prems =>
+            [
+            (rtac impI 1),
+            (etac conjE 1),
+            (assume_tac 1)
+            ]);
+@end example
+
+@noindent
+I created the batch proof above by typing in the interactive proof line
+by line into a @code{*FOL*} buffer, cutting the text from the
+@code{*FOL-listener*} and then using @code{isa-batchify} on the region.
+To do this, you must set the mark at the start of the proof with
+@kbd{C-SPC}, and move to the end (after @code{result}), before using
+@kbd{M-x isa-batchify}.
+
+Notice that the tactics involving single rules were replaced with short
+forms. The command @kbd{M-x isa-expandshorts} can be used to do this
+without converting the form of a proof.
+
+Using @kbd{M-x isa-unbatchify} on the above region converts back into an
+interactive proof:
+@example
+   val prems = goal FOL.thy "P & Q --> P";
+   by (rtac impI 1);
+   by (etac conjE 1);
+   by (assume_tac 1);
+   val easy_theorem = result();
+@end example
+If you write batch proofs in ML files, it may be wise to write them in a
+regular form such as the above, so that it is possible to convert
+them back into interactive proofs in the future if you need to (for
+example, to adapt them to different theorems).
+
+@deffn Command isa-batchify
+Convert an interactive proof into a batch proof.
+@end deffn
+
+@deffn Command isa-unbatchify
+Convert a batch proof into an interactive proof.
+@end deffn
+
+@deffn Command isa-expandshorts
+Normalize tactics and commands, like the shell-script
+@file{expandshorts} in the Isabelle distribution.  Tactic
+command shorthands (@code{ba},@code{br},@dots{}) are expanded and
+long-forms with singleton arguments (@code{resolve_tac [@var{rule}]})
+are contracted (to @code{rtac @var{rule}}).
+@end deffn
+
+I hope future versions of these functions will be easier to use (without
+needing to set a region to use them) and more reliable --- at present
+they are a bit fussy about the format of the proofs, which should be
+pretty much as shown above.
+
+
+
+
+@node  Theory mode User Options, Fontification of Theory Files, Batchifying proofs, Theory and ML files
+@comment  node-name,  next,  previous,  up
+@section Theory mode User Options
+@cindex  Theory mode user options
+@cindex  User options, theory mode
+
+Here are some options you may use to control the layout of theory files
+and behaviour when editing theory files.
+
+@defopt isa-thy-heading-indent
+  Indentation for section headings.  Defaults to 0.
+@end defopt
+
+@defopt isa-thy-indent-level 
+  Indentation step for Isabelle theory files.  Defaults to 2.
+@end defopt
+
+@defopt isa-thy-indent-strings
+  If this option is non-@code{nil}, then indentation will take place
+  inside strings.  This is useful because often strings contain logical
+  formulae and it is desirable to indent them according to parenthesis
+  nesting.  
+
+  The default is @code{t}, but you may wish to disable indenting inside
+  strings if your logic uses any of the usual bracket characters in
+  unusual ways.
+@end defopt
+
+@defopt isa-thy-use-sml-mode 
+  If non-nil, when inside the ML section of theory files,
+  @code{sml-mode} will be invoked automatically, triggered by line
+  indentation that occurs with @key{TAB} or @key{RET}.
+@end defopt
+
+@node Fontification of Theory Files,  , Theory mode User Options, Theory and ML files
+@comment  node-name,  next,  previous,  up
+@section Fontification of Theory Files
+@cindex  Fontification 
+@cindex  Theory files, highlighting
+
+Theory files can be automatically highlighted using @code{font-lock},
+which is well-integrated with Emacs (and especially XEmacs) by now.  If
+you have font-locking enabled by default, by @code{(setq
+font-lock-auto-fontify t)} or via the Options menu in XEmacs, theory
+files should be automatically syntax-highlighted with section heading, string
+and comment highlighting when you load and edit them.
+
+See the documentation of @code{font-lock.el} for more information on how
+to configure the highlighting, using the variable
+@code{isa-thy-mode-font-lock-keywords}.
+
+
+
+
+
+@c ***************************************************************************
+@c ***************************************************************************
+
+@node Display Customization, Acknowledgements, Theory and ML files, top
+@comment  node-name,  next,  previous,  up
+@chapter Customizing the Display
+@cindex Customizing the display
+@cindex Display customization
+@cindex Frame customization
+@cindex User options, display
+
+There are two ways of customizing the frame display when using Isamode:
+by setting Emacs user-options and by setting X resources.
+
+
+@menu
+* Display options I::
+* Display options II::          
+* X Resources::                 
+@end menu
+
+
+@node Display options I, Display options II, Display Customization, Display Customization
+@c NB: having "section" inside if here seems to prevent AUC TeX
+@c from correctly making menu above and nodes.  Remove it to fix
+@c nodes.
+@iftex
+@section Display options
+@end iftex
+@ifinfo
+@heading Display options
+@end ifinfo
+
+The user options controlling the display mostly appear in the file
+@file{isa-display.el}. 
+
+@defopt isa-multiple-frame-mode
+If non-@code{nil}, use multiple Emacs 19
+frames.  Setting this to @code{nil} in Emacs 19 varieties restricts
+Isabelle-interaction mode to use a single frame; the default is
+@code{t} for Emacs 19 varieties, when running in a window system
+environment.
+@end defopt
+
+@defopt isa-startup-defaults
+This is a list of symbols which indicates the associated buffers to
+initialise when an Isabelle session is started.  The default is
+@code{'(proofstate ruletable)}, which means that a table of rules and
+and a proof state display will be shown.  You can add to or remove from
+the list according to your working preferences, choosing from:
+
+@quotation
+    @code{proofstate} @*
+    @code{ruletable} @*
+    @code{listener} @*
+@end quotation
+
+@end defopt
+
+@defopt isa-default-menubar 
+This is the base menubar (in XEmacs format) for Isabelle interaction
+mode; the default value is @code{(nil)}, which means the only menus that
+appear are the Isabelle ones.  You can set this to
+@code{default-menubar} (in XEmacs) or @code{t} (in FSF Emacs), to
+have the usual menus in addition. This may clutter the display a little,
+or result in menus being lost off the end of the menubar!
+@end defopt
+
+@defopt isa-use-long-ruletables 
+If non-@code{nil}, use long-form of ruletables, which include section
+headings.  Probably best set to @code{nil} for single-frame working.
+This defaults to @code{t} in window environments.
+@end defopt
+
+
+@node Display options II, X Resources, Display options I, Display Customization
+@ifinfo
+@heading Display options, continued
+@end ifinfo
+
+@defopt isa-single-frame-display-props
+This variable controls the default heights for the various Isabelle buffers in
+single frame mode, and also a ``shrink to fit'' attribute.  It is an
+association list of mode symbols and cons cells, which defaults to:
+
+@smallexample
+(setq isa-single-frame-display-props       
+   ((proofstate-mode     (window-height . 8)) 
+    (listener-mode       (window-height . 5))
+    (ruletable-mode      (window-height . 15))
+    (ruletable-mode      (shrink-to-fit . t)))
+)
+@end smallexample
+
+(Note: these properties are implemented inside Isamode and are not a
+standard part of Emacs.)
+@end defopt
+
+@defopt isa-multi-frame-display-props
+This variable controls the the default frame parameters for multiple
+frame mode.  It is an association list used to set symbol properties.
+@end defopt
+
+The default value of @code{isa-multi-frame-display-props} is in the
+file @file{isa-display.el}:
+
+@smallexample
+(setq isa-multi-frame-display-props      
+  '((proofstate-mode     (frame-name . proofstate))
+    (listener-mode       (frame-name . listener))
+    (ruletable-mode      (frame-name . ruletable))
+    (isa-mode            (frame-name . isabelle))
+    (ruletable           (instance-limit . 3))
+    (ruletable           (max-frame-height . 25))
+    (ruletable           (frame-defaults .
+                           ((top . 560)   (left . 5)
+                            (height . 22) (width . 60)
+                            (menu-bar-lines . 0)
+                            (minibuffer . nil)                          
+                            )))
+    (isabelle            (frame-defaults .             
+                          ((top .  0)    (left .  0)        
+                           (height . 35) (width . 80)   
+                           )))
+    (listener            (frame-defaults .
+                          ((top . 620)   (left . 530)
+                           (height . 7)  (width . 65)
+                           (menu-bar-lines . 0)
+                           (minibuffer . nil)
+                           )))
+    (proofstate          (frame-defaults .
+                          ((top .  30)    (left . 700)
+                           (height . 35)  (width . 50)
+                           (menu-bar-lines . 0)
+                           (minibuffer . nil)
+                           (vertical-scroll-bars . nil)
+                           ))))
+)
+@end smallexample
+
+This shows the setting of the frame names for the Isabelle buffer modes
+(which automatically gives them individual X-windows), and the frame
+default parameters for each of the frame names.  Some of these values
+may be inappropriate for your display, so you may wish to change them in
+your @file{~/.emacs}.
+
+There are also different property names understood by FSF Emacs 19 and
+XEmacs.  See
+@iftex 
+the Emacs lisp reference manual 
+@end iftex
+@ifinfo
+@ref{(elisp)Frame Parameters} (FSF GNU Emacs) or
+@ref{(lispref)Frame Parameters} (XEmacs 19.14)
+@end ifinfo
+for more information about frame parameters.
+
+
+
+
+
+@node X Resources,  , Display options II, Display Customization
+@section X Resources
+@cindex X Resources
+
+Frame properties are an unsatisfactory part of the Emacs window
+interface: the kind of settings they control are more appropriate to the
+X resources database.  Unfortunately, not all Emacsen recognise X
+resources, or recognize them properly.
+
+@itemize @bullet
+@item
+In FSF Emacs 19, whether X resources are recognized properly depends on
+the version you have and how it was built at your site.  You should try
+to see if they work for you.  
+@item
+In XEmacs, X resources may be reliably used in place of
+@code{isa-multi-frame-display-props}.
+@end itemize
+
+Here are some sample X defaults for XEmacs that work well on my X
+terminal.  For FSF Emacs, the preceding @code{Emacs*} should be removed.
+See the files @file{Xdefaults-lemacs} and @file{Xdefaults-emacs19} in
+the Isamode distribution for more examples, and the documentation in
+@inforef{Resources X, ,emacs}.  Further details are in @inforef{X Frame
+Parameters, ,elisp}.
+
+@smallexample
+/*  ===== X resources for Isamode in XEmacs ===== */
+
+/* some frame geometries. */
+
+Emacs*listener.geometry:   55x10
+Emacs*ruletable.geometry:  57x15
+Emacs*proofstate.geometry: 52x35
+
+/* ruletable frames have large red headings */
+
+Emacs*ruletable.ruletableGroupname.attributeFont:  \
+        -adobe-helvetica-bold-r-normal--*-160-75-75-*-*-iso8859-1
+
+Emacs*ruletable.ruletableGroupname.attributeForeground: red
+
+/* proofstate frames have bold goal subgoal numbers */
+ 
+Emacs*proofstate.proofstateGoal.attributeFont:  \
+        -adobe-courier-bold-r-normal--*-140-75-75-*-*-iso8859-1
+Emacs*proofstate.proofstateSubgoalNumber.attributeFont:  \
+        -adobe-courier-bold-r-normal--*-140-75-75-*-*-iso8859-1
+@end smallexample
+
+@noindent
+Frame properties take precedence over X resources, so you will need
+@lisp
+   (setq isa-multi-frame-display-props 
+    '((proofstate-mode     (frame-name . proofstate))
+      (listener-mode       (frame-name . listener))
+      (ruletable-mode      (frame-name . ruletable))
+      (isa-mode            (frame-name . isabelle))
+      (ruletable           (instance-limit . 3))))
+@end lisp
+or something similar in your @file{~/.emacs} to ensure the resource
+specifications have effect.
+
+
+
+
+
+
+
+
+
+
+
+@node Acknowledgements, Obtaining the software, Display Customization, top
+@comment  node-name,  next,  previous,  up
+@chapter Acknowledgements
+
+My thanks go to the following people for their suggestions, testing and
+bug-reports:
+@itemize @bullet
+@item
+Sara Kalvala,
+@item
+Larry Paulson,
+@item
+Christian Prehofer,
+@item
+Tobias Nipkow,
+@item
+Chris Owens,
+@item
+Ole Steen Rasmussen,
+@item
+Claudio Russo,
+@item
+Markus Wenzel.
+@end itemize
+
+@noindent
+
+I am happy to receive any grateful comments, clever suggestions, or
+moaning reports of problems concerning this program and its
+documentation.  The only rewards for developing Isamode are your
+feedback and the nefarious pleasures of elisp hacking, so please drop a
+line!
+
+
+@cindex Author's address
+@quotation
+@cartouche
+David Aspinall,                   @*
+Department of Computer Science,   @*
+University of Edinburgh,          @*
+King's Buildings,                 @*
+Edinburgh.                        @*
+email: @code{David.Aspinall@@dcs.ed.ac.uk}
+@end cartouche
+@end quotation
+
+@page
+
+
+@node Obtaining the software, Installing Isamode, Acknowledgements, top
+@appendix Obtaining the software
+@cindex Obtaining Isamode
+@cindex @code{ftp}
+
+@heading Isamode
+
+The Isamode distribution consists of Emacs lisp files and documentation.
+You can obtain the latest version by anonymous @code{ftp} from
+Edinburgh.
+
+@enumerate
+@item
+Connect to @code{ftp ftp.dcs.ed.ac.uk}
+@item
+Login as @samp{anonymous} with your internet address as password
+@item
+@code{type binary}
+@item
+@code{cd pub/da}
+@item
+@code{get Isamode.tar.gz}
+@end enumerate
+
+It's easier inside Emacs! With @code{ange-ftp} (in version 19's) ---
+visit the directory 
+@example
+   /anonymous@@ftp.dcs.ed.ac.uk:pub/da/
+@end example
+move to the file @file{Isamode.tar.gz} and press @key{C} to copy the
+file to a local directory.
+
+The file @file{Isamode.tar.gz} should be gunzipped, then extracted
+using tar:
+@example
+   gunzip -c Isamode.tar.gz | tar xf -
+@end example
+
+Please tell me if you have any problems.
+
+
+@heading Isabelle
+
+Of course, Isamode is useless without Isabelle!
+
+Isabelle is available by anonymous ftp from the University of Cambridge.
+Instructions:
+
+@enumerate
+@item
+Connect to @code{ftp.cl.cam.ac.uk}
+@item
+Login as @samp{ftp} with your internet address as password
+@item
+@code{type binary}
+@item
+@code{cd ml}
+@item
+@code{get Isabelle94.tar.gz}
+@end enumerate
+
+The file @file{Isabelle94.tar.gz} should be unpacked as described above.
+When unpacked, the file @file{COPYRIGHT} contains the Copyright notice
+and Disclaimer of Warranty.
+
+
+
+@node Installing Isamode, Ideas and Dreams, Obtaining the software, top
+@comment  node-name,  next,  previous,  up
+@appendix Installing Isamode
+@cindex Installing Isamode
+@cindex Compatible Emacs versions
+
+The current version of Isamode should work with these Emacs versions:
+@itemize @bullet
+@item 
+ XEmacs 19.15  (probably 19.14 too)
+@item 
+ FSF GNU Emacs 19.34
+@end itemize
+Version 2.2 of Isamode was the last to be compatible with GNU Emacs
+version 18.  If you are still using Emacs 18, you are behind the times!
+
+I recommend that you use XEmacs.  It provides a much nicer environment
+than FSF Emacs and Isamode works better with it.  Future versions of
+Isamode may not be compatible with FSF Emacs at all; the effort of
+supporting both Emacs versions is too great.
+
+To install Isamode, you need to do the following things:
+@enumerate
+@item
+ Edit the file @file{isa-site.el}.  Here you must edit the variable
+ @var{isa-isatool-command} to be the full path name for the command
+ @code{isatool}, if it is not on your @code{PATH} by default.  If it
+ @emph{is} on @code{PATH} when Emacs is started, you may not need to do
+ any customization at all.
+@item
+ Edit the file @file{Makefile}.  There are two variables to
+ control where the files are to be installed.
+@item
+ Execute the command @code{make compile} to create @file{.elc} files
+@item
+ Execute the command @code{make install} to install @file{.el} and
+@file{.elc} files.  It may be most convenient to put the file
+@file{isa-site.el} somewhere on the Emacs load path.
+@item
+ If you want to start Isabelle from inside any Emacs session, add the line:
+@lisp
+   (load "isa-site")
+@end lisp
+ to an Emacs site-default file or your personal @file{~/.emacs}.
+ Otherwise you may wish to start special Emacs sessions for Isabelle
+ using one of the tools provided with Isabelle.
+@end enumerate
+More detailed instructions are given in the file @file{INSTALL.txt}
+which is part of the distribution.  Installation should be
+straightforward, so please let me know if you have any problems.
+
+To customize Isamode, read about the user options available in
+@ref{Display Customization} and @ref{Theory mode User Options}.
+
+Happy theorem proving!
+
+@c  You must set the variable @code{isa-install-dir} to the directory that
+@c the lisp files for Isamode are located in.  You should set
+@c @code{isa-ml-compiler} to specify the ML compiler that Isabelle runs
+@c under at your site; 
+
+
+@c **********************************************************************
+@c **********************************************************************
+
+@node Ideas and Dreams, Index, Installing Isamode, top
+@appendix Ideas and Dreams
+@cindex Dreams
+@cindex Future plans
+
+I believe that writing a front end inside a new-generation Emacs is a
+viable way of attaining a powerful user-interface for Isabelle and
+similar systems.  But this package is only an early experiment in that
+direction; version 19 Emacsen are in an early stage of development at
+the moment.
+
+Several ideas for future improvement of Isamode have already been
+mentioned in the text of this manual; below follows a fuller wish-list.
+
+Please feel free to send me comments on this list, more ideas to add, or
+--- even better --- offers to implement something from it!
+
+@menu
+* Proof stepping::              
+* Customization per-logic::     
+* Better theory handling::      
+* Improved Listener::           
+* Caching proof states::        
+* Rule table categories::       
+* Improved batchify::           
+* Tracing Output::              
+* Text insertion::              
+* Improved templates::          
+* Sensitizing rules::           
+* Buttons::                     
+* Driving by mouse::            
+* Help from Isabelle::          
+* Bells and whistles::          
+* Special characters::          
+* Questions::                   
+@end menu
+
+
+@node Proof stepping, Customization per-logic, Ideas and Dreams, Ideas and Dreams
+@subsubheading Proof stepping
+  More flexible ways of using @code{isa-thy-use-line} would be nice.
+  Presently it works best inside ML files: it could be linked in with
+  the listener or @code{*proof*} buffer (see below) in a function
+  @code{isa-replay-proof} which grabs a proof (interactive or
+  non-interactive) from an ML file into a fresh proof buffer and begins
+  replaying it.  Ways of moving through interactive lines would be
+  useful (they should really be part of @code{sml-mode}).
+
+@node Customization per-logic, Better theory handling, Proof stepping, Ideas and Dreams
+@subsubheading Customization per-logic
+  We perhaps need @code{@var{logic}.el} and even @code{@var{theory}.el}
+  files for customization per-logic and per-theory.  At present too much
+  is hard coded inside Isamode --- it would be good to have ways of
+  generating (at least first attempts at) rule tables from the theorem
+  databases, or from the HTML that is automatically generated by
+  Isabelle during building logics.  As an alternative to introducing
+  more files, a special @code{emacs} section could be added to theory
+  files.  We'd like ways of controlling and customizing the tactics that
+  appear in the menus and the completion table in
+  @code{isa-completion-list}.
+
+@node Better theory handling, Improved Listener, Customization per-logic, Ideas and Dreams
+@subsubheading Better theory handling
+  We really need both @code{logic-name} and @code{root-logic-name}, the
+  latter used for rule tables, provers, etc.  This is because people may
+  save logic images that are extensions of built-in logics.  Also, user
+  logics should be provided for in a better way.  Perhaps Emacs should
+  attempt to understand or communicate with Isabelle about the theory
+  tree structure and make system?  Browsing of theories?
+
+@node Improved Listener, Caching proof states, Better theory handling, Ideas and Dreams
+@subsubheading Improved Listener
+  It should listen actively!  A complete history of commands is a bit
+  too general really, particularly when it is available in the
+  interaction buffer, by paging backwards or using the comint history
+  mechanism.  A better idea would be to have multiple listeners or
+  @code{*proof*} buffers which accumulates commands since the most
+  recent "goal".  The @code{push_proof} commands could be interpreted to
+  manage several such buffers.  Commands issued to Isabelle which don't
+  affect/reference the proofstate could be appended to a "proof
+  preamble" (e.g. making lists of rules, simpsets, etc).  With a little
+  bit of help from Isabelle (see below), @code{undo();} can be correctly
+  interpreted and lines deleted from the transcript as needed.  Lines
+  might be annotated with the corresponding proof level.  It can't be
+  perfectly robust, of course, but we should be able to do pretty well.
+  Suggested functions: @code{extract-interactive-proof},
+  @code{extract-batch-proof} to create *proof* buffers from regions of
+  ML files, and a command @code{replay-proof-step} to step through each
+  command in an interactive proof.
+
+@node Caching proof states, Rule table categories, Improved Listener, Ideas and Dreams
+@subsubheading Caching proof states
+  Stepping backward and forward through proof levels is slow, probably
+  mostly due to Isabelle's pretty printer.  Emacs could cache them in an
+  internal buffer, given an understanding of @code{undo}, etc, (or at
+  least, a conservative cache-flushing when the proof level is seen to
+  go down).
+
+@node Rule table categories, Improved batchify, Caching proof states, Ideas and Dreams
+@subsubheading Rule table categories
+@cindex ML types
+This scheme might be improved by making use of ML's type information to
+help infer the rule category.  Type information could prevent Emacs from
+constructing an ill-typed tactic, for example, by showing the difference
+between subgoal indexed tactics (@code{int->tactic}) and tactics the
+apply to the whole proofstate (@code{tactic}).  
+
+Type information isn't fine enough to distinguish between the different
+kinds of rules, however, so a better solution would be to add the rule
+categories to the rule tables themselves, at the expense of added
+complexity in emacs lisp.  This may be implemented in some future
+version of Isamode.  (In the meantime, and at any rate, following the
+naming convention above for your own logics is probably a good idea).
+Then general ways of handling things such as LK's @samp{pack} type may
+be integrated.
+
+A different problem is the choice of the default tactic itself, given
+the category of the identifier.  Often you @emph{won't} want to apply
+@code{fast_tac} to everything of type @code{claset}!  There needs to be
+a more flexible way of specifying what the default tactic is (for
+example, based on the last menu action).
+
+
+@node Improved batchify, Tracing Output, Rule table categories, Ideas and Dreams
+@subsubheading Improved batchify
+  @code{isa-batchify} could do with improving: it should be a bit more
+  flexible, permitting proofs starting with @code{goal @dots{}}, and even
+  not ending with @code{result} (it might prompt for a rule name).
+  (Also, we shouldn't use @code{replace-regexp} in the function --- it
+  means undo doesn't work properly.)
+
+@node Tracing Output, Text insertion, Improved batchify, Ideas and Dreams
+@subsubheading Tracing Output
+  Should probably appear a temporary buffer or the proof state window.
+  Prompting might be in the minibuffer (or dialogue boxes?).
+
+@node Text insertion, Improved templates, Tracing Output, Ideas and Dreams
+@subsubheading Text insertion
+  Is the behaviour of tactic, etc, shortcuts annoyingly inconsistent?  -
+  should @code{assume}, @code{resolve prems}, etc, wait for @key{RET} to
+  submit input?  Another possibility is to use the minibuffer for input
+  in tactic-entering functions: (or editing the current line of ML) if
+  the tactic menus become accessible from the Proof State buffer, the
+  Isabelle interaction buffer itself would become only of esoteric interest.  (for
+  "advanced" use!).
+
+@node Improved templates, Sensitizing rules, Text insertion, Ideas and Dreams
+@subsubheading Improved templates
+ In theory mode files; `hot spots' (that disappear when you type
+ something into them) are nicer than minibuffer prompting, I think.  But
+ probably not worth the trouble.
+
+@node Sensitizing rules, Buttons, Improved templates, Ideas and Dreams
+@subsubheading Sensitizing rules
+  Ruletable option for filtering of resolvable rules to
+  highlight only those applicable in the current proofstate.
+
+@node Buttons, Driving by mouse, Sensitizing rules, Ideas and Dreams
+@subsubheading Buttons
+  They're quicker to use than pull-down menus: we might have a special
+  buffer of them (e.g. Tactics table), a special section in the
+  ruletable buffer, or tool bars.  In a tactics table we could have
+  standard tactics, and then additional tactics on a per-logic basis.
+  But we probably don't really want a proliferation of windows @dots{}
+
+@node Driving by mouse, Help from Isabelle, Buttons, Ideas and Dreams
+@subsubheading  Driving by mouse
+  We're on the way a completely mouse-driven interface.  Whether you
+  want to use a mouse or not, it should be possible to use the mouse
+  most of the time, for simple proofs.  More control keys for the
+  interaction buffer would be useful (for example, completion on rule
+  names after all).
+
+@node Help from Isabelle, Bells and whistles, Driving by mouse, Ideas and Dreams
+@subsubheading  Help from Isabelle
+  Several of the improvements suggested so far would benefit from
+  `behind the scenes' interaction with Isabelle.  At the moment, the
+  interface is fairly simple minded -- proof states are displayed in
+  another buffer simply by removing anything from Isabelle's output that
+  looks like a list of subgoals.  It would probably be better to get
+  Isabelle to participate actively in the interaction, writing some of
+  the interface code in ML and sending special control sequences to
+  Emacs.  It would probably be more appropriate to site all of the rule
+  table data, tactic names, etc, within Isabelle.
+
+@node Bells and whistles, Special characters, Help from Isabelle, Ideas and Dreams
+@subsubheading Bells and whistles
+  Icon bitmaps, colours, more fontification, etc, etc @dots{}. It might be
+  good to highlight and tag completed proofs somehow, or annotate in
+  some way.  Also, implement "intelligent" filtering.
+
+@node Special characters, Questions, Bells and whistles, Ideas and Dreams
+@subsubheading Special characters
+  Isamode has rudimentary support for the special X fonts with symbols,
+  via the variable @code{isa-use-special-font}.   The 8-bit input
+  functions provided in the Isabelle distribution are not yet integrated
+  (I tried them once and locked up my keyboard!).  This is future work,
+  including automatic processing of theory files to convert between the
+  symbol format and the long-hand @TeX{}-oriented names.
+  
+@node Questions,  , Special characters, Ideas and Dreams
+@subsubheading Questions
+What ideas or improvements are missing from the above list? @*
+What are the priorities? @*
+What's the state of art in other theorem prover interfaces? @* 
+Which things can be done usefully and easily inside Emacs and which not? @*
+@c What do @emph{you} think? @*
+
+
+
+
+
+
+@node Index, Copying, Ideas and Dreams, top
+@unnumbered Index
+@printindex cp
+
+
+@node Copying,  , Index, top
+@ifinfo
+@majorheading Copying
+This info file and the program Isamode are 
+
+@quotation
+Copyright @copyright{} 1994-2000 David R. Aspinall and LFCS. @* 
+@end quotation
+
+Both are distributed under the terms of the GNU General Public License,
+which you should find with your copy of GNU Emacs.
+
+The program Isabelle is Copyright @copyright{} by the University of
+Cambridge.
+
+Documentation dated: 2000/3/13 
+@end ifinfo
+
+
+@page
+@contents
+@bye

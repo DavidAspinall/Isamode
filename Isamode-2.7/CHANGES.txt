@@ -1,0 +1,78 @@
+Summary of Recent Changes to Isamode
+====================================
+
+Last updated: March 2000.
+
+
+Version 2.7 (March 2000)
+-------------------------
+
+** Fixed patch for Isabelle99.
+
+** Updated dates in documentation.
+
+** Updated support for theory files, some new keywords added.
+
+
+Version 2.6p3 (January 2000)
+----------------------------
+
+** Patch for Isabelle99, supplied by Markus Wenzel.
+
+
+Version 2.6
+-----------
+** Updated for Isabelle94-8 release, and recent versions of Emacs.
+   Tested on Xemacs 19.15 and FSF GNU Emacs 19.34.
+
+    * Uses 'isatool' program to run Isabelle, find logics and
+      documentation.  This means that the following variables are now
+      *obsolete*: isa-logic-paths, isa-ml-compiler, isa-manual-path,
+      isa-view-man-command, isa-user-prologue (replaced by
+      isa-session-prelude).  There is a new variable
+      isa-ruletable-paths which contains a list of directories to
+      search for ruletables.
+
+    * The menus have been slightly rearranged and extended,
+      and some of the functions have been updated.
+      Some short-cut keybindings have changed to be easier.
+      The use file functions now do something sensible inside
+      the Isabelle buffer.
+      
+    * The theory file editing mode has been simplified, mainly to
+      remove the code for automatically inserting backslashes in
+      strings, since this is no longer required by the Isabelle theory
+      file syntax.  The variables isa-theory-indent-factors,
+      isa-thy-rigid-backslash-left, isa-theory-rigid-backslash-right,
+      have been removed.
+
+      At least some of the new headings are included in the list of
+      known keywords, but they are not dealt with in templates at the
+      moment.
+
+      Fontification is now included by default, so there is
+      NO NEED for  (require 'isa-fonts)  and that file has gone.
+
+    * The functions isa-batchify and isa-unbatchify have been
+      modified to produce goal...qed and qed_goal proofs.
+      (They're still as fussy about the proof formats as before, though)
+
+    * Frame properties have been repaired (broken by Emacs
+      changes/bugs).   See isa-multi-frame-display-props in
+      isa-load.el.
+
+    * The special faces (e.g. ruletableGroupname) used by Isamode in
+      ruletables and proofstates are now only partially supported ---
+      they are still used, but no attempt is made to make them appear
+      in a special way inside Isamode.  In the future they may be
+      dropped altogether in favour of font-lock, which is easier to
+      use and provides a (slightly) more consistent interface across
+      Emacs versions.  
+
+    * In XEmacs, as you move the mouse over rule names in rule tables,
+      the tactic that would be run by button2 is displayed in the
+      minibuffer.  This also works in FSF Emacs, if you set the variable
+      isa-track-mouse to t.  However this seems to cause a flickery
+      display and slow-down, so it isn't recommended.  It would be much
+      better if you switched to XEmacs, really...
+      

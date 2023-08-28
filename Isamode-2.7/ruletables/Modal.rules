@@ -1,0 +1,14 @@
+s4
+ lstar0  lstar1  lstar2  
+ rstar0  rstar1  rstar2  
+ boxR  boxL  
+ diaR  diaL 
+s43
+ lstar0  lstar1  lstar2  
+ rstar0  rstar1  rstar2  
+ boxL  diaR  
+ pi1  pi2 
+Defs
+ strimp_def  streqv_def 
+Provers
+ rule_tac  step_tac  solven_tac  solve_tac 
